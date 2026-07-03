@@ -1,78 +1,177 @@
 # Business Case
 
-AutoSlot simulates an internal booking system for a small auto service company.
+AutoSlot — учебный MVP-проект, построенный вокруг реалистичного бизнес-сценария: онлайн-запись клиентов в небольшой автосервис.
 
-The project is not a commercial production system. It is a portfolio MVP built around a realistic business scenario.
+Проект не является коммерческой production-системой. Он оформлен как portfolio case study, чтобы показать полный цикл разработки небольшой бизнес-функции: от описания проблемы до реализации логики, тестов и документации.
 
-## Background
+## Контекст
 
-Many small auto service companies receive booking requests through phone calls, messengers, and direct customer visits.
+Многие небольшие автосервисы принимают записи через телефонные звонки, мессенджеры или личные обращения клиентов.
 
-This process works when the number of requests is low. However, it becomes inefficient when staff are busy, several customers contact the company at the same time, or different services require different amounts of time.
+Такой процесс может работать при малом количестве клиентов, но становится неудобным, когда:
 
-## Business Problem
+- заявок становится больше;
+- сотрудники заняты текущей работой;
+- несколько клиентов обращаются одновременно;
+- разные услуги занимают разное количество времени;
+- администратору приходится вручную искать свободное окно.
 
-Manual booking creates several issues:
+## Бизнес-проблема
 
-- customers cannot see available time slots by themselves;
-- staff must manually check the schedule before confirming each booking;
-- double-booking may happen by mistake;
-- service duration is not always considered accurately;
-- booking history is difficult to structure;
-- the company depends too much on phone availability.
+Ручная запись клиентов создает несколько операционных проблем.
 
-## Proposed MVP
+### 1. Высокая нагрузка на сотрудников
 
-AutoSlot provides a simple web-based booking flow.
+Администратор или мастер вынужден постоянно отвечать на однотипные вопросы:
 
-The customer should be able to:
+- какие услуги доступны;
+- сколько времени занимает услуга;
+- есть ли свободное время;
+- можно ли записаться на конкретную дату.
 
-- view available services;
-- select a service;
-- choose a date;
-- see available time slots;
-- enter name, phone number, and vehicle plate;
-- create a booking.
+Это отвлекает сотрудников от основной работы.
 
-The staff side should be able to:
+### 2. Нет прозрачного расписания для клиента
 
-- view bookings;
-- filter bookings by date;
-- update booking status;
-- cancel bookings when needed.
+Клиент не видит свободные слоты самостоятельно. Ему приходится звонить или писать, ждать ответа и согласовывать время вручную.
 
-## MVP Goals
+Из-за этого часть клиентов может просто не дойти до записи.
 
-The MVP is focused on validating the core scheduling logic.
+### 3. Риск двойной записи
 
-Main goals:
+При ручном ведении расписания возможны ошибки:
 
-- reduce manual booking work;
-- prevent basic double-booking cases;
-- make the booking process more transparent for customers;
-- provide a foundation for future CRM integration;
-- keep the system simple enough for a small company.
+- два клиента записаны на одно и то же время;
+- услуга занимает больше времени, чем было заложено;
+- запись забыли внести в таблицу;
+- статус записи не обновили.
+
+### 4. Сложно учитывать длительность услуги
+
+Разные услуги занимают разное время.
+
+Например:
+
+```text
+Компьютерная диагностика — 30 минут
+Замена масла — 60 минут
+Ремонт тормозной системы — 90 минут
+```
+
+При ручной записи сотруднику приходится постоянно учитывать длительность услуги самому.
+
+### 5. Нет структурированной истории
+
+Если записи ведутся в мессенджерах или заметках, сложно быстро понять:
+
+- сколько клиентов было за день;
+- какие услуги популярнее;
+- сколько записей отменили;
+- какие дни наиболее загружены.
+
+## Предлагаемое решение
+
+AutoSlot предлагает базовую систему онлайн-записи.
+
+Клиент должен иметь возможность:
+
+- открыть страницу записи;
+- выбрать услугу;
+- выбрать дату;
+- увидеть доступные временные слоты;
+- указать имя, телефон и номер автомобиля;
+- создать запись без участия администратора.
+
+Сотрудник должен иметь возможность:
+
+- видеть список записей;
+- фильтровать записи по дате;
+- менять статус записи;
+- отменять запись при необходимости.
+
+## Цель MVP
+
+Цель MVP — проверить и реализовать основной процесс записи.
+
+В первой версии важно не покрыть все возможные функции, а сделать рабочую основу:
+
+- хранение услуг;
+- создание записей;
+- расчет доступных временных слотов;
+- проверка пересечений по времени;
+- базовое управление статусами;
+- тестирование ключевой логики.
+
+## Основной пользовательский сценарий
+
+```text
+Клиент открывает сайт
+        ↓
+Выбирает услугу
+        ↓
+Выбирает дату
+        ↓
+Система показывает свободные слоты
+        ↓
+Клиент выбирает время
+        ↓
+Вводит имя, телефон и номер автомобиля
+        ↓
+Система создает запись
+        ↓
+Сотрудник видит запись в панели управления
+```
+
+## MVP Scope
+
+В первую версию входят:
+
+- каталог услуг;
+- модель услуги;
+- модель записи;
+- создание записи;
+- расчет доступных временных слотов;
+- запрет записи на занятое время;
+- статусы записи;
+- базовая административная страница;
+- seed-данные;
+- автоматические тесты.
 
 ## Non-Goals
 
-The MVP does not attempt to solve every business problem.
+В первую версию не входят:
 
-The following features are excluded from the first version:
+- онлайн-оплата;
+- SMS-уведомления;
+- WhatsApp-интеграция;
+- интеграция с внешней CRM;
+- полноценная авторизация;
+- личный кабинет клиента;
+- мобильное приложение;
+- сложная аналитика;
+- production-деплой.
 
-- online payments;
-- SMS or WhatsApp notifications;
-- external CRM integration;
-- advanced authentication;
-- staff permissions;
-- financial reporting;
-- mobile application.
+## Критерии успешности MVP
 
-## Success Criteria
+MVP можно считать успешным, если:
 
-The MVP can be considered successful if:
+- клиент может создать запись без помощи сотрудника;
+- система не предлагает занятые временные слоты;
+- активные записи не пересекаются по времени;
+- сотрудник может увидеть созданные записи;
+- ключевая логика покрыта тестами;
+- проект можно запустить локально по инструкции из README.
 
-- a customer can create a booking without staff assistance;
-- unavailable time slots are not offered to customers;
-- staff can see created bookings;
-- booking logic is covered with automated tests;
-- the project can be started locally by another developer using README instructions.
+## Возможное развитие проекта
+
+После реализации базового MVP проект можно развивать в нескольких направлениях:
+
+- авторизация сотрудников;
+- календарный интерфейс;
+- подтверждение записи по ссылке;
+- уведомления клиенту;
+- интеграция с CRM;
+- интеграция с Telegram или WhatsApp;
+- аналитика по загруженности;
+- Docker-сборка;
+- деплой на сервер.
