@@ -1,61 +1,77 @@
 # AutoSlot
 
-AutoSlot is a Phoenix LiveView MVP for online booking management in a small auto service company.
+AutoSlot — MVP-приложение на Phoenix LiveView для онлайн-записи клиентов в небольшой автосервис.
 
-The project simulates a real business case where customers can choose an auto service, select an available time slot, enter vehicle information, and create a booking online. Staff members can manage bookings from a simple admin-oriented interface.
+Проект имитирует реалистичный бизнес-кейс: клиент выбирает услугу, дату, свободное время, вводит контактные данные и номер автомобиля, после чего система создает запись. Для сотрудников автосервиса планируется административный интерфейс для просмотра и управления записями.
 
-## Problem
+## Проблема
 
-Small auto service companies often manage customer bookings manually through phone calls, messengers, or spreadsheets.
+Небольшие автосервисы часто принимают записи вручную: через телефонные звонки, мессенджеры или таблицы.
 
-This creates several operational problems:
+Такой подход создает несколько проблем:
 
-- staff spend too much time answering repetitive booking requests;
-- customers cannot see available time slots before contacting the company;
-- double-booking can happen during busy working hours;
-- booking history is difficult to track and analyze;
-- service duration is often handled manually instead of being calculated by the system.
+- сотрудники тратят много времени на однотипные вопросы о свободном времени;
+- клиент не может самостоятельно увидеть доступные слоты;
+- возможны ошибки и двойные записи;
+- длительность услуги приходится учитывать вручную;
+- историю записей сложно анализировать;
+- компания сильно зависит от доступности администратора на телефоне.
 
-## Solution
+## Решение
 
-AutoSlot provides a simple online booking flow for customers and a basic booking management foundation for staff.
+AutoSlot предлагает простой онлайн-сценарий записи клиента.
 
-The MVP focuses on the core scheduling process:
+Базовый пользовательский сценарий:
 
-1. the customer selects a service;
-2. the customer selects a date;
-3. the system shows available time slots;
-4. the customer enters contact and vehicle information;
-5. the system creates a booking;
-6. staff can view and manage bookings.
+1. клиент выбирает услугу;
+2. клиент выбирает дату;
+3. система показывает доступные временные слоты;
+4. клиент вводит имя, телефон и номер автомобиля;
+5. система создает запись;
+6. сотрудник может просмотреть и обработать запись.
 
-## MVP Scope
+## Цель MVP
 
-Current planned MVP scope:
+Цель проекта — реализовать минимальную рабочую версию системы онлайн-записи для автосервиса.
 
-- service catalog;
-- booking creation;
-- available time slot calculation;
-- prevention of double-booking;
-- booking statuses;
-- admin booking dashboard;
-- seed data for local development;
-- tests for booking logic;
-- GitHub Actions CI.
+Основной акцент сделан не на дизайне, а на логике записи:
 
-## Out of Scope
+- хранение услуг;
+- создание записей;
+- расчет доступных временных слотов;
+- запрет двойной записи;
+- работа со статусами записи;
+- базовая административная часть;
+- тестирование бизнес-логики.
 
-The following features are intentionally not included in the initial MVP:
+## Функциональность MVP
 
-- online payments;
-- SMS notifications;
-- CRM integration;
-- customer authentication;
-- staff role management;
-- analytics dashboard;
-- production deployment.
+Планируемая функциональность:
 
-## Tech Stack
+- каталог услуг автосервиса;
+- создание записи клиентом;
+- расчет свободных временных слотов;
+- проверка пересечений по времени;
+- статусы записи: `pending`, `confirmed`, `cancelled`;
+- административная страница со списком записей;
+- seed-данные для локальной разработки;
+- тесты для основной бизнес-логики;
+- GitHub Actions для проверки проекта.
+
+## Что не входит в первую версию
+
+В первую версию намеренно не включены:
+
+- онлайн-оплата;
+- SMS-уведомления;
+- WhatsApp-уведомления;
+- интеграция с CRM;
+- полноценная авторизация сотрудников;
+- разделение ролей пользователей;
+- аналитика и отчеты;
+- production-деплой.
+
+## Технологический стек
 
 - Elixir
 - Phoenix Framework
@@ -65,20 +81,147 @@ The following features are intentionally not included in the initial MVP:
 - ExUnit
 - GitHub Actions
 
-## Local Development
+## Локальный запуск
 
-### Requirements
+### Требования
+
+Для запуска проекта локально нужны:
 
 - Elixir
 - Erlang/OTP
 - PostgreSQL
-- Node.js is not required for the default Phoenix 1.8 asset pipeline
 - Git
 
-### Setup
-
-Clone the repository:
+### Клонирование репозитория
 
 ```bash
 git clone https://github.com/takeshi-katana/autoslot.git
 cd autoslot
+```
+
+### Установка зависимостей
+
+```bash
+mix deps.get
+```
+
+### Создание базы данных
+
+```bash
+mix ecto.create
+```
+
+### Выполнение миграций
+
+```bash
+mix ecto.migrate
+```
+
+### Запуск сервера
+
+```bash
+mix phx.server
+```
+
+После запуска приложение будет доступно по адресу:
+
+```text
+http://localhost:4000
+```
+
+## Тестирование
+
+Запуск тестов:
+
+```bash
+mix test
+```
+
+## Структура проекта
+
+```text
+lib/
+  autoslot/
+    бизнес-логика приложения и контексты
+
+  autoslot_web/
+    веб-слой Phoenix: страницы, контроллеры, LiveView, компоненты
+
+priv/repo/
+  миграции базы данных и seed-данные
+
+test/
+  автоматические тесты
+
+docs/
+  проектная документация
+```
+
+## Планируемые основные модули
+
+```text
+Autoslot.Services
+Autoslot.Bookings
+Autoslot.Scheduling
+```
+
+## GitHub Workflow
+
+Проект ведется через простой GitHub-процесс:
+
+1. создается issue;
+2. создается отдельная ветка;
+3. реализуется изменение;
+4. создается коммит с понятным названием;
+5. открывается Pull Request;
+6. после проверки изменения мержатся в `main`.
+
+Примеры веток:
+
+```text
+docs/initial-project-documentation
+docs/russian-documentation
+feature/service-catalog
+feature/booking-schema
+feature/slot-calculation
+feature/customer-booking-flow
+feature/admin-dashboard
+test/booking-logic
+ci/github-actions
+```
+
+## Portfolio Goal
+
+Этот проект создан как portfolio case study для демонстрации практических навыков разработки на Elixir/Phoenix.
+
+Проект показывает:
+
+- структуру Phoenix-приложения;
+- работу с Ecto и PostgreSQL;
+- разделение бизнес-логики и веб-слоя;
+- разработку пользовательского интерфейса на LiveView;
+- создание и проверку бизнес-правил;
+- тестирование через ExUnit;
+- работу с GitHub Issues, ветками, Pull Requests и CI.
+
+## Статус проекта
+
+Проект находится в стадии активной разработки.
+
+Текущий этап:
+
+```text
+Initial documentation and project setup
+```
+
+Ближайшие этапы:
+
+```text
+Service catalog
+Booking schema
+Slot calculation
+Customer booking flow
+Admin dashboard
+Tests
+CI
+```
