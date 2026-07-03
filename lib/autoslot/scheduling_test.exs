@@ -1,118 +1,299 @@
-defmodule Autoslot.SchedulingTest do
+defmodule Autoslot.BookingsTest do
   use Autoslot.DataCase
 
-  alias Autoslot.Bookings.Booking
-  alias Autoslot.Scheduling
-  alias Autoslot.Services.Service
+  alias Autoslot.Bookings
 
-  describe "available_slots/3" do
-    test "returns all slots for empty day" do
-      service = %Service{duration_minutes: 60}
+  describe "bookings" do
+    alias Autoslot.Bookings.Booking
 
-      slots = Scheduling.available_slots(~D[2026-07-04], service, [])
+    import Autoslot.BookingsFixtures
+    import Autoslot.ServicesFixtures
 
-      assert length(slots) == 17
+    @invalid_attrs %{
+      customer_name: nil,
+      phone: nil,
+      vehicle_plate: nil,
+      starts_at: nil,
+      ends_at: nil,
+      status: nil,
+      service_id: nil
+    }
 
-      assert hd(slots) == %{
-               starts_at: ~U[2026-07-04 09:00:00Z],
-               ends_at: ~U[2026-07-04 10:00:00Z]
-             }
-
-      assert List.last(slots) == %{
-               starts_at: ~U[2026-07-04 17:00:00Z],
-               ends_at: ~U[2026-07-04 18:00:00Z]
-             }
+    test "list_bookings/0 returns all bookings" do
+      booking = booking_fixture()
+      assert Bookings.list_bookings() == [booking]
     end
 
-    test "uses service duration to calculate slot end time" do
-      service = %Service{duration_minutes: 90}
+    test "list_bookings_for_date/1 returns bookings for selected date" do
+      booking = booking_fixture()
 
-      [first_slot | _rest] = Scheduling.available_slots(~D[2026-07-04], service, [])
+      _other_day_booking =
+        booking_fixture(%{
+          starts_at: ~U[2026-07-05 09:00:00Z],
+          ends_at: ~U[2026-07-05 10:00:00Z]
+        })
 
-      assert first_slot.starts_at == ~U[2026-07-04 09:00:00Z]
-      assert first_slot.ends_at == ~U[2026-07-04 10:30:00Z]
+      assert Bookings.list_bookings_for_date(~D[2026-07-04]) == [booking]
     end
 
-    test "does not create slots outside working hours" do
-      service = %Service{duration_minutes: 90}
+    test "list_active_bookings_for_date/1 excludes cancelled bookings" do
+      active_booking = booking_fixture()
 
-      slots = Scheduling.available_slots(~D[2026-07-04], service, [])
+      _cancelled_booking =
+        booking_fixture(%{
+          starts_at: ~U[2026-07-04 11:00:00Z],
+          ends_at: ~U[2026-07-04 12:00:00Z],
+          status: "cancelled"
+        })
 
-      assert List.last(slots) == %{
-               starts_at: ~U[2026-07-04 16:30:00Z],
-               ends_at: ~U[2026-07-04 18:00:00Z]
-             }
+      assert Bookings.list_active_bookings_for_date(~D[2026-07-04]) == [active_booking]
     end
 
-    test "removes slots that overlap with existing pending booking" do
-      service = %Service{duration_minutes: 60}
+    test "get_booking!/1 returns the booking with given id" do
+      booking = booking_fixture()
+      assert Bookings.get_booking!(booking.id) == booking
+    end
 
-      existing_booking = %Booking{
-        starts_at: ~U[2026-07-04 10:00:00Z],
-        ends_at: ~U[2026-07-04 11:00:00Z],
-        status: "pending"
+    test "create_booking/1 with valid data creates a booking" do
+      service = service_fixture()
+
+      valid_attrs = %{
+        customer_name: "Иван Петров",
+        phone: "+7 999 123-45-67",
+        vehicle_plate: "А123ВС125",
+        starts_at: ~U[2026-07-04 09:00:00Z],
+        ends_at: ~U[2026-07-04 10:00:00Z],
+        status: "pending",
+        service_id: service.id
       }
 
-      slots = Scheduling.available_slots(~D[2026-07-04], service, [existing_booking])
-
-      refute %{starts_at: ~U[2026-07-04 09:30:00Z], ends_at: ~U[2026-07-04 10:30:00Z]} in slots
-      refute %{starts_at: ~U[2026-07-04 10:00:00Z], ends_at: ~U[2026-07-04 11:00:00Z]} in slots
-      refute %{starts_at: ~U[2026-07-04 10:30:00Z], ends_at: ~U[2026-07-04 11:30:00Z]} in slots
-
-      assert %{starts_at: ~U[2026-07-04 09:00:00Z], ends_at: ~U[2026-07-04 10:00:00Z]} in slots
-      assert %{starts_at: ~U[2026-07-04 11:00:00Z], ends_at: ~U[2026-07-04 12:00:00Z]} in slots
+      assert {:ok, %Booking{} = booking} = Bookings.create_booking(valid_attrs)
+      assert booking.customer_name == "Иван Петров"
+      assert booking.phone == "+7 999 123-45-67"
+      assert booking.vehicle_plate == "А123ВС125"
+      assert booking.starts_at == ~U[2026-07-04 09:00:00Z]
+      assert booking.ends_at == ~U[2026-07-04 10:00:00Z]
+      assert booking.status == "pending"
+      assert booking.service_id == service.id
     end
 
-    test "removes slots that overlap with existing confirmed booking" do
-      service = %Service{duration_minutes: 60}
+    test "create_booking/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Bookings.create_booking(@invalid_attrs)
+    end
 
-      existing_booking = %Booking{
-        starts_at: ~U[2026-07-04 13:00:00Z],
-        ends_at: ~U[2026-07-04 14:00:00Z],
-        status: "confirmed"
+    test "create_booking/1 rejects invalid status" do
+      service = service_fixture()
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          status: "finished"
+        })
+
+      assert {:error, changeset} = Bookings.create_booking(attrs)
+      assert "is invalid" in errors_on(changeset).status
+    end
+
+    test "create_booking/1 rejects booking when ends_at is before starts_at" do
+      service = service_fixture()
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:00:00Z],
+          ends_at: ~U[2026-07-04 09:00:00Z]
+        })
+
+      assert {:error, changeset} = Bookings.create_booking(attrs)
+      assert "must be after start time" in errors_on(changeset).ends_at
+    end
+
+    test "create_booking/1 rejects booking when ends_at equals starts_at" do
+      service = service_fixture()
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:00:00Z],
+          ends_at: ~U[2026-07-04 10:00:00Z]
+        })
+
+      assert {:error, changeset} = Bookings.create_booking(attrs)
+      assert "must be after start time" in errors_on(changeset).ends_at
+    end
+
+    test "create_booking/1 rejects overlapping pending booking" do
+      service = service_fixture()
+
+      _existing_booking =
+        booking_fixture(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:00:00Z],
+          ends_at: ~U[2026-07-04 11:00:00Z],
+          status: "pending"
+        })
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:30:00Z],
+          ends_at: ~U[2026-07-04 11:30:00Z],
+          status: "pending"
+        })
+
+      assert {:error, changeset} = Bookings.create_booking(attrs)
+      assert "overlaps with existing active booking" in errors_on(changeset).starts_at
+    end
+
+    test "create_booking/1 rejects overlapping confirmed booking" do
+      service = service_fixture()
+
+      _existing_booking =
+        booking_fixture(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 13:00:00Z],
+          ends_at: ~U[2026-07-04 14:00:00Z],
+          status: "confirmed"
+        })
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 13:30:00Z],
+          ends_at: ~U[2026-07-04 14:30:00Z],
+          status: "pending"
+        })
+
+      assert {:error, changeset} = Bookings.create_booking(attrs)
+      assert "overlaps with existing active booking" in errors_on(changeset).starts_at
+    end
+
+    test "create_booking/1 allows booking that starts when previous booking ends" do
+      service = service_fixture()
+
+      _existing_booking =
+        booking_fixture(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:00:00Z],
+          ends_at: ~U[2026-07-04 11:00:00Z],
+          status: "confirmed"
+        })
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 11:00:00Z],
+          ends_at: ~U[2026-07-04 12:00:00Z],
+          status: "pending"
+        })
+
+      assert {:ok, %Booking{} = booking} = Bookings.create_booking(attrs)
+      assert booking.starts_at == ~U[2026-07-04 11:00:00Z]
+      assert booking.ends_at == ~U[2026-07-04 12:00:00Z]
+    end
+
+    test "create_booking/1 allows overlap with cancelled booking" do
+      service = service_fixture()
+
+      _cancelled_booking =
+        booking_fixture(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:00:00Z],
+          ends_at: ~U[2026-07-04 11:00:00Z],
+          status: "cancelled"
+        })
+
+      attrs =
+        valid_booking_attrs(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:30:00Z],
+          ends_at: ~U[2026-07-04 11:30:00Z],
+          status: "pending"
+        })
+
+      assert {:ok, %Booking{} = booking} = Bookings.create_booking(attrs)
+      assert booking.starts_at == ~U[2026-07-04 10:30:00Z]
+      assert booking.ends_at == ~U[2026-07-04 11:30:00Z]
+    end
+
+    test "update_booking/2 with valid data updates the booking" do
+      booking = booking_fixture()
+      new_service = service_fixture(%{name: "Ремонт тормозной системы"})
+
+      update_attrs = %{
+        customer_name: "Петр Иванов",
+        phone: "+7 999 765-43-21",
+        vehicle_plate: "В456СЕ125",
+        starts_at: ~U[2026-07-05 11:00:00Z],
+        ends_at: ~U[2026-07-05 12:30:00Z],
+        status: "confirmed",
+        service_id: new_service.id
       }
 
-      slots = Scheduling.available_slots(~D[2026-07-04], service, [existing_booking])
-
-      refute %{starts_at: ~U[2026-07-04 12:30:00Z], ends_at: ~U[2026-07-04 13:30:00Z]} in slots
-      refute %{starts_at: ~U[2026-07-04 13:00:00Z], ends_at: ~U[2026-07-04 14:00:00Z]} in slots
-      refute %{starts_at: ~U[2026-07-04 13:30:00Z], ends_at: ~U[2026-07-04 14:30:00Z]} in slots
+      assert {:ok, %Booking{} = booking} = Bookings.update_booking(booking, update_attrs)
+      assert booking.customer_name == "Петр Иванов"
+      assert booking.phone == "+7 999 765-43-21"
+      assert booking.vehicle_plate == "В456СЕ125"
+      assert booking.starts_at == ~U[2026-07-05 11:00:00Z]
+      assert booking.ends_at == ~U[2026-07-05 12:30:00Z]
+      assert booking.status == "confirmed"
+      assert booking.service_id == new_service.id
     end
 
-    test "cancelled booking does not block slots" do
-      service = %Service{duration_minutes: 60}
+    test "update_booking/2 rejects overlapping time with another active booking" do
+      service = service_fixture()
 
-      cancelled_booking = %Booking{
-        starts_at: ~U[2026-07-04 10:00:00Z],
-        ends_at: ~U[2026-07-04 11:00:00Z],
-        status: "cancelled"
-      }
+      _existing_booking =
+        booking_fixture(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 10:00:00Z],
+          ends_at: ~U[2026-07-04 11:00:00Z],
+          status: "confirmed"
+        })
 
-      slots = Scheduling.available_slots(~D[2026-07-04], service, [cancelled_booking])
+      booking =
+        booking_fixture(%{
+          service_id: service.id,
+          starts_at: ~U[2026-07-04 12:00:00Z],
+          ends_at: ~U[2026-07-04 13:00:00Z],
+          status: "pending"
+        })
 
-      assert %{starts_at: ~U[2026-07-04 09:30:00Z], ends_at: ~U[2026-07-04 10:30:00Z]} in slots
-      assert %{starts_at: ~U[2026-07-04 10:00:00Z], ends_at: ~U[2026-07-04 11:00:00Z]} in slots
-      assert %{starts_at: ~U[2026-07-04 10:30:00Z], ends_at: ~U[2026-07-04 11:30:00Z]} in slots
+      assert {:error, changeset} =
+               Bookings.update_booking(booking, %{
+                 starts_at: ~U[2026-07-04 10:30:00Z],
+                 ends_at: ~U[2026-07-04 11:30:00Z]
+               })
+
+      assert "overlaps with existing active booking" in errors_on(changeset).starts_at
     end
-  end
 
-  describe "overlaps?/4" do
-    test "returns true when intervals overlap" do
-      assert Scheduling.overlaps?(
-               ~U[2026-07-04 10:30:00Z],
-               ~U[2026-07-04 11:30:00Z],
-               ~U[2026-07-04 10:00:00Z],
-               ~U[2026-07-04 11:00:00Z]
-             )
+    test "update_booking/2 does not conflict with the same booking" do
+      booking = booking_fixture()
+
+      assert {:ok, %Booking{} = updated_booking} =
+               Bookings.update_booking(booking, %{
+                 status: "confirmed"
+               })
+
+      assert updated_booking.status == "confirmed"
     end
 
-    test "returns false when intervals touch but do not overlap" do
-      refute Scheduling.overlaps?(
-               ~U[2026-07-04 11:00:00Z],
-               ~U[2026-07-04 12:00:00Z],
-               ~U[2026-07-04 10:00:00Z],
-               ~U[2026-07-04 11:00:00Z]
-             )
+    test "update_booking/2 with invalid data returns error changeset" do
+      booking = booking_fixture()
+      assert {:error, %Ecto.Changeset{}} = Bookings.update_booking(booking, @invalid_attrs)
+      assert booking == Bookings.get_booking!(booking.id)
+    end
+
+    test "delete_booking/1 deletes the booking" do
+      booking = booking_fixture()
+      assert {:ok, %Booking{}} = Bookings.delete_booking(booking)
+      assert_raise Ecto.NoResultsError, fn -> Bookings.get_booking!(booking.id) end
+    end
+
+    test "change_booking/1 returns a booking changeset" do
+      booking = booking_fixture()
+      assert %Ecto.Changeset{} = Bookings.change_booking(booking)
     end
   end
 end
