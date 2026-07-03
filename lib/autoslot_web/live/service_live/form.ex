@@ -12,7 +12,7 @@ defmodule AutoslotWeb.ServiceLive.Form do
         {@page_title}
         <:subtitle>Use this form to manage service records in your database.</:subtitle>
       </.header>
-
+      
       <.form for={@form} id="service-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="textarea" label="Description" />
