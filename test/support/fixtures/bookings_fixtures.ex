@@ -4,20 +4,30 @@ defmodule Autoslot.BookingsFixtures do
   entities via the `Autoslot.Bookings` context.
   """
 
-  @doc """
-  Generate a booking.
-  """
+  import Autoslot.ServicesFixtures
+
+  def valid_booking_attrs(attrs \\ %{}) do
+    service_id =
+      Map.get_lazy(attrs, :service_id, fn ->
+        service_fixture().id
+      end)
+
+    attrs
+    |> Enum.into(%{
+      customer_name: "Иван Петров",
+      phone: "+7 999 123-45-67",
+      vehicle_plate: "А123ВС125",
+      starts_at: ~U[2026-07-04 09:00:00Z],
+      ends_at: ~U[2026-07-04 10:00:00Z],
+      status: "pending",
+      service_id: service_id
+    })
+  end
+
   def booking_fixture(attrs \\ %{}) do
     {:ok, booking} =
       attrs
-      |> Enum.into(%{
-        customer_name: "some customer_name",
-        ends_at: ~U[2026-07-02 16:29:00Z],
-        phone: "some phone",
-        starts_at: ~U[2026-07-02 16:29:00Z],
-        status: "some status",
-        vehicle_plate: "some vehicle_plate"
-      })
+      |> valid_booking_attrs()
       |> Autoslot.Bookings.create_booking()
 
     booking
