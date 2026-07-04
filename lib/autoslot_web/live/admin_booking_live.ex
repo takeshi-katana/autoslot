@@ -3,15 +3,25 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   alias Autoslot.Bookings
 
+  @status_filters [
+    {"all", "Все"},
+    {"pending", "Ожидает"},
+    {"confirmed", "Подтверждена"},
+    {"cancelled", "Отменена"}
+  ]
+
   @impl true
   def mount(_params, _session, socket) do
     selected_date = Date.utc_today()
-    bookings = Bookings.list_bookings_with_services_for_date(selected_date)
+    selected_status = "all"
+    bookings = load_bookings(selected_date, selected_status)
 
     socket =
       socket
       |> assign(:page_title, "Управление записями")
       |> assign(:selected_date, Date.to_iso8601(selected_date))
+      |> assign(:selected_status, selected_status)
+      |> assign(:status_filters, @status_filters)
       |> assign(:bookings, bookings)
       |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
@@ -23,11 +33,28 @@ defmodule AutoslotWeb.AdminBookingLive do
   @impl true
   def handle_event("change_date", %{"date" => date_string}, socket) do
     selected_date = parse_date(date_string)
-    bookings = Bookings.list_bookings_with_services_for_date(selected_date)
+    bookings = load_bookings(selected_date, socket.assigns.selected_status)
 
     socket =
       socket
       |> assign(:selected_date, Date.to_iso8601(selected_date))
+      |> assign(:bookings, bookings)
+      |> assign(:booking_to_cancel, nil)
+      |> assign(:success_message, nil)
+      |> assign(:error_message, nil)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("change_status_filter", %{"status" => selected_status}, socket) do
+    selected_date = parse_date(socket.assigns.selected_date)
+    selected_status = normalize_status_filter(selected_status)
+    bookings = load_bookings(selected_date, selected_status)
+
+    socket =
+      socket
+      |> assign(:selected_status, selected_status)
       |> assign(:bookings, bookings)
       |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
@@ -73,7 +100,7 @@ defmodule AutoslotWeb.AdminBookingLive do
     case Bookings.update_booking(booking, %{status: status}) do
       {:ok, _booking} ->
         selected_date = parse_date(socket.assigns.selected_date)
-        bookings = Bookings.list_bookings_with_services_for_date(selected_date)
+        bookings = load_bookings(selected_date, socket.assigns.selected_status)
 
         socket =
           socket
@@ -91,6 +118,33 @@ defmodule AutoslotWeb.AdminBookingLive do
           |> assign(:error_message, format_changeset_errors(changeset))
 
         {:noreply, socket}
+    end
+  end
+
+  defp load_bookings(%Date{} = date, selected_status) do
+    date
+    |> Bookings.list_bookings_with_services_for_date()
+    |> filter_bookings_by_status(selected_status)
+  end
+
+  defp filter_bookings_by_status(bookings, "all"), do: bookings
+
+  defp filter_bookings_by_status(bookings, selected_status) do
+    Enum.filter(bookings, fn booking ->
+      booking.status == selected_status
+    end)
+  end
+
+  defp normalize_status_filter(status) do
+    allowed_statuses =
+      Enum.map(@status_filters, fn {value, _label} ->
+        value
+      end)
+
+    if status in allowed_statuses do
+      status
+    else
+      "all"
     end
   end
 
@@ -175,18 +229,33 @@ defmodule AutoslotWeb.AdminBookingLive do
         </div>
 
         <section class="rounded-xl bg-base-100 p-6 shadow">
-          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <form phx-change="change_date" class="flex flex-col gap-2 sm:flex-row sm:items-end">
-              <label class="grid gap-2">
-                <span class="font-medium">Дата</span>
-                <input
-                  type="date"
-                  name="date"
-                  value={@selected_date}
-                  class="input input-bordered"
-                />
-              </label>
-            </form>
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+              <form phx-change="change_date" class="flex flex-col gap-2">
+                <label class="grid gap-2">
+                  <span class="font-medium">Дата</span>
+                  <input
+                    type="date"
+                    name="date"
+                    value={@selected_date}
+                    class="input input-bordered"
+                  />
+                </label>
+              </form>
+
+              <form phx-change="change_status_filter" class="flex flex-col gap-2">
+                <label class="grid gap-2">
+                  <span class="font-medium">Статус</span>
+                  <select name="status" class="select select-bordered">
+                    <%= for {status, label} <- @status_filters do %>
+                      <option value={status} selected={@selected_status == status}>
+                        {label}
+                      </option>
+                    <% end %>
+                  </select>
+                </label>
+              </form>
+            </div>
 
             <div class="text-sm text-base-content/60">
               Найдено записей: {length(@bookings)}
@@ -210,7 +279,7 @@ defmodule AutoslotWeb.AdminBookingLive do
               <h2 class="text-xl font-semibold">На выбранную дату записей нет</h2>
 
               <p class="mt-2 text-base-content/60">
-                Создайте тестовую запись на странице клиента.
+                Измените дату или фильтр статуса. Также можно создать тестовую запись на странице клиента.
               </p>
               <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
             </div>
