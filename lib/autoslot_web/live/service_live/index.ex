@@ -15,27 +15,27 @@ defmodule AutoslotWeb.ServiceLive.Index do
           </.button>
         </:actions>
       </.header>
-
+      
       <.table
         id="services"
         rows={@streams.services}
         row_click={fn {_id, service} -> JS.navigate(~p"/services/#{service}") end}
       >
         <:col :let={{_id, service}} label="Name">{service.name}</:col>
-
+        
         <:col :let={{_id, service}} label="Description">{service.description}</:col>
-
+        
         <:col :let={{_id, service}} label="Duration minutes">{service.duration_minutes}</:col>
-
+        
         <:col :let={{_id, service}} label="Price">{service.price}</:col>
-
+        
         <:action :let={{_id, service}}>
           <div class="sr-only">
             <.link navigate={~p"/services/#{service}"}>Show</.link>
           </div>
-          <.link navigate={~p"/services/#{service}/edit"}>Edit</.link>
+           <.link navigate={~p"/services/#{service}/edit"}>Edit</.link>
         </:action>
-
+        
         <:action :let={{id, service}}>
           <.link
             phx-click={JS.push("delete", value: %{id: service.id}) |> hide("##{id}")}
