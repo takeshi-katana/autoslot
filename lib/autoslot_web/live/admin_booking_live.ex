@@ -4,23 +4,25 @@ defmodule AutoslotWeb.AdminBookingLive do
   alias Autoslot.Bookings
 
   @status_filters [
-    {"all", "Р’СЃРµ"},
-    {"pending", "РћР¶РёРґР°РµС‚"},
-    {"confirmed", "РџРѕРґС‚РІРµСЂР¶РґРµРЅР°"},
-    {"cancelled", "РћС‚РјРµРЅРµРЅР°"}
+    {"all", "Все"},
+    {"pending", "Ожидает"},
+    {"confirmed", "Подтверждена"},
+    {"cancelled", "Отменена"}
   ]
 
   @impl true
   def mount(_params, _session, socket) do
     selected_date = Date.utc_today()
     selected_status = "all"
-    {bookings, summary} = load_admin_data(selected_date, selected_status)
+    search_query = ""
+    {bookings, summary} = load_admin_data(selected_date, selected_status, search_query)
 
     socket =
       socket
-      |> assign(:page_title, "РЈРїСЂР°РІР»РµРЅРёРµ Р·Р°РїРёСЃСЏРјРё")
+      |> assign(:page_title, "Управление записями")
       |> assign(:selected_date, Date.to_iso8601(selected_date))
       |> assign(:selected_status, selected_status)
+      |> assign(:search_query, search_query)
       |> assign(:status_filters, @status_filters)
       |> assign(:bookings, bookings)
       |> assign(:summary, summary)
@@ -34,7 +36,13 @@ defmodule AutoslotWeb.AdminBookingLive do
   @impl true
   def handle_event("change_date", %{"date" => date_string}, socket) do
     selected_date = parse_date(date_string)
-    {bookings, summary} = load_admin_data(selected_date, socket.assigns.selected_status)
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        socket.assigns.selected_status,
+        socket.assigns.search_query
+      )
 
     socket =
       socket
@@ -52,7 +60,13 @@ defmodule AutoslotWeb.AdminBookingLive do
   def handle_event("change_status_filter", %{"status" => selected_status}, socket) do
     selected_date = parse_date(socket.assigns.selected_date)
     selected_status = normalize_status_filter(selected_status)
-    {bookings, summary} = load_admin_data(selected_date, selected_status)
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        selected_status,
+        socket.assigns.search_query
+      )
 
     socket =
       socket
@@ -67,13 +81,56 @@ defmodule AutoslotWeb.AdminBookingLive do
   end
 
   @impl true
+  def handle_event("search_bookings", %{"search_query" => search_query}, socket) do
+    selected_date = parse_date(socket.assigns.selected_date)
+    search_query = String.trim(search_query)
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        socket.assigns.selected_status,
+        search_query
+      )
+
+    socket =
+      socket
+      |> assign(:search_query, search_query)
+      |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
+      |> assign(:booking_to_cancel, nil)
+      |> assign(:success_message, nil)
+      |> assign(:error_message, nil)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_search", _params, socket) do
+    selected_date = parse_date(socket.assigns.selected_date)
+    search_query = ""
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        socket.assigns.selected_status,
+        search_query
+      )
+
+    socket =
+      socket
+      |> assign(:search_query, search_query)
+      |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
+      |> assign(:booking_to_cancel, nil)
+      |> assign(:success_message, nil)
+      |> assign(:error_message, nil)
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("confirm_booking", %{"id" => booking_id}, socket) do
-    update_booking_status(
-      socket,
-      booking_id,
-      "confirmed",
-      "Р—Р°РїРёСЃСЊ РїРѕРґС‚РІРµСЂР¶РґРµРЅР°."
-    )
+    update_booking_status(socket, booking_id, "confirmed", "Запись подтверждена.")
   end
 
   @impl true
@@ -99,7 +156,7 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   @impl true
   def handle_event("cancel_booking", %{"id" => booking_id}, socket) do
-    update_booking_status(socket, booking_id, "cancelled", "Р—Р°РїРёСЃСЊ РѕС‚РјРµРЅРµРЅР°.")
+    update_booking_status(socket, booking_id, "cancelled", "Запись отменена.")
   end
 
   defp update_booking_status(socket, booking_id, status, success_message) do
@@ -108,7 +165,13 @@ defmodule AutoslotWeb.AdminBookingLive do
     case Bookings.update_booking(booking, %{status: status}) do
       {:ok, _booking} ->
         selected_date = parse_date(socket.assigns.selected_date)
-        {bookings, summary} = load_admin_data(selected_date, socket.assigns.selected_status)
+
+        {bookings, summary} =
+          load_admin_data(
+            selected_date,
+            socket.assigns.selected_status,
+            socket.assigns.search_query
+          )
 
         socket =
           socket
@@ -130,10 +193,14 @@ defmodule AutoslotWeb.AdminBookingLive do
     end
   end
 
-  defp load_admin_data(%Date{} = date, selected_status) do
+  defp load_admin_data(%Date{} = date, selected_status, search_query) do
     all_bookings = Bookings.list_bookings_with_services_for_date(date)
-    filtered_bookings = filter_bookings_by_status(all_bookings, selected_status)
     summary = build_summary(all_bookings)
+
+    filtered_bookings =
+      all_bookings
+      |> filter_bookings_by_status(selected_status)
+      |> filter_bookings_by_search(search_query)
 
     {filtered_bookings, summary}
   end
@@ -144,6 +211,34 @@ defmodule AutoslotWeb.AdminBookingLive do
     Enum.filter(bookings, fn booking ->
       booking.status == selected_status
     end)
+  end
+
+  defp filter_bookings_by_search(bookings, ""), do: bookings
+
+  defp filter_bookings_by_search(bookings, search_query) do
+    normalized_query = normalize_search_value(search_query)
+
+    Enum.filter(bookings, fn booking ->
+      [
+        booking.customer_name,
+        booking.phone,
+        booking.vehicle_plate,
+        service_name(booking)
+      ]
+      |> Enum.any?(fn value ->
+        value
+        |> normalize_search_value()
+        |> String.contains?(normalized_query)
+      end)
+    end)
+  end
+
+  defp normalize_search_value(nil), do: ""
+
+  defp normalize_search_value(value) do
+    value
+    |> to_string()
+    |> String.downcase()
   end
 
   defp build_summary(bookings) do
@@ -206,15 +301,15 @@ defmodule AutoslotWeb.AdminBookingLive do
       |> Time.to_string()
       |> String.slice(0, 5)
 
-    "#{start_time}вЂ“#{end_time}"
+    "#{start_time}–#{end_time}"
   end
 
   defp service_name(%{service: %{name: name}}) when is_binary(name), do: name
-  defp service_name(_booking), do: "вЂ”"
+  defp service_name(_booking), do: "—"
 
-  defp status_label("pending"), do: "РћР¶РёРґР°РµС‚"
-  defp status_label("confirmed"), do: "РџРѕРґС‚РІРµСЂР¶РґРµРЅР°"
-  defp status_label("cancelled"), do: "РћС‚РјРµРЅРµРЅР°"
+  defp status_label("pending"), do: "Ожидает"
+  defp status_label("confirmed"), do: "Подтверждена"
+  defp status_label("cancelled"), do: "Отменена"
   defp status_label(status), do: status
 
   defp status_badge_class("pending"), do: "badge badge-warning"
@@ -238,44 +333,41 @@ defmodule AutoslotWeb.AdminBookingLive do
       <div class="mx-auto max-w-7xl">
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <a href="/" class="text-sm text-primary hover:underline">в†ђ РќР° РіР»Р°РІРЅСѓСЋ</a>
+            <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
+
             <h1 class="mt-4 text-4xl font-bold text-base-content">
-              РЈРїСЂР°РІР»РµРЅРёРµ Р·Р°РїРёСЃСЏРјРё
+              Управление записями
             </h1>
 
             <p class="mt-3 max-w-2xl text-base-content/70">
-              РђРґРјРёРЅРёСЃС‚СЂР°С‚РёРІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р° РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° Р·Р°РїРёСЃРµР№ РєР»РёРµРЅС‚РѕРІ Рё РёР·РјРµРЅРµРЅРёСЏ РёС… СЃС‚Р°С‚СѓСЃРѕРІ.
+              Административная страница для просмотра записей клиентов и изменения их статусов.
             </p>
           </div>
 
           <div class="flex gap-3">
-            <a href="/book" class="btn btn-outline">РЎС‚СЂР°РЅРёС†Р° РєР»РёРµРЅС‚Р°</a>
-            <a href="/services" class="btn btn-outline">РљР°С‚Р°Р»РѕРі СѓСЃР»СѓРі</a>
+            <a href="/book" class="btn btn-outline">Страница клиента</a>
+            <a href="/services" class="btn btn-outline">Каталог услуг</a>
           </div>
         </div>
 
         <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-xl bg-base-100 p-5 shadow">
-            <div class="text-sm text-base-content/60">Р’СЃРµРіРѕ Р·Р°РїРёСЃРµР№</div>
-
+            <div class="text-sm text-base-content/60">Всего записей</div>
             <div class="mt-2 text-3xl font-bold">{@summary.total}</div>
           </div>
 
           <div class="rounded-xl bg-base-100 p-5 shadow">
-            <div class="text-sm text-base-content/60">РћР¶РёРґР°СЋС‚</div>
-
+            <div class="text-sm text-base-content/60">Ожидают</div>
             <div class="mt-2 text-3xl font-bold text-warning">{@summary.pending}</div>
           </div>
 
           <div class="rounded-xl bg-base-100 p-5 shadow">
-            <div class="text-sm text-base-content/60">РџРѕРґС‚РІРµСЂР¶РґРµРЅС‹</div>
-
+            <div class="text-sm text-base-content/60">Подтверждены</div>
             <div class="mt-2 text-3xl font-bold text-success">{@summary.confirmed}</div>
           </div>
 
           <div class="rounded-xl bg-base-100 p-5 shadow">
-            <div class="text-sm text-base-content/60">РћС‚РјРµРЅРµРЅС‹</div>
-
+            <div class="text-sm text-base-content/60">Отменены</div>
             <div class="mt-2 text-3xl font-bold text-error">{@summary.cancelled}</div>
           </div>
         </section>
@@ -285,7 +377,7 @@ defmodule AutoslotWeb.AdminBookingLive do
             <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
               <form phx-change="change_date" class="flex flex-col gap-2">
                 <label class="grid gap-2">
-                  <span class="font-medium">Р”Р°С‚Р°</span>
+                  <span class="font-medium">Дата</span>
                   <input
                     type="date"
                     name="date"
@@ -297,7 +389,7 @@ defmodule AutoslotWeb.AdminBookingLive do
 
               <form phx-change="change_status_filter" class="flex flex-col gap-2">
                 <label class="grid gap-2">
-                  <span class="font-medium">РЎС‚Р°С‚СѓСЃ</span>
+                  <span class="font-medium">Статус</span>
                   <select name="status" class="select select-bordered">
                     <%= for {status, label} <- @status_filters do %>
                       <option value={status} selected={@selected_status == status}>
@@ -307,10 +399,39 @@ defmodule AutoslotWeb.AdminBookingLive do
                   </select>
                 </label>
               </form>
+
+              <form
+                phx-change="search_bookings"
+                phx-submit="search_bookings"
+                class="flex flex-col gap-2"
+              >
+                <label class="grid gap-2">
+                  <span class="font-medium">Поиск</span>
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      name="search_query"
+                      value={@search_query}
+                      placeholder="Клиент, телефон, авто или услуга"
+                      class="input input-bordered w-80 max-w-full"
+                    />
+
+                    <%= if @search_query != "" do %>
+                      <button
+                        type="button"
+                        phx-click="clear_search"
+                        class="btn btn-outline"
+                      >
+                        Очистить
+                      </button>
+                    <% end %>
+                  </div>
+                </label>
+              </form>
             </div>
 
             <div class="text-sm text-base-content/60">
-              РќР°Р№РґРµРЅРѕ Р·Р°РїРёСЃРµР№: {length(@bookings)}
+              Найдено записей: {length(@bookings)}
             </div>
           </div>
 
@@ -328,35 +449,27 @@ defmodule AutoslotWeb.AdminBookingLive do
 
           <%= if Enum.empty?(@bookings) do %>
             <div class="mt-8 rounded-lg border border-base-300 p-8 text-center">
-              <h2 class="text-xl font-semibold">
-                РќР° РІС‹Р±СЂР°РЅРЅСѓСЋ РґР°С‚Сѓ Р·Р°РїРёСЃРµР№ РЅРµС‚
-              </h2>
+              <h2 class="text-xl font-semibold">На выбранную дату записей нет</h2>
 
               <p class="mt-2 text-base-content/60">
-                РР·РјРµРЅРёС‚Рµ РґР°С‚Сѓ РёР»Рё С„РёР»СЊС‚СЂ СЃС‚Р°С‚СѓСЃР°. РўР°РєР¶Рµ РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ С‚РµСЃС‚РѕРІСѓСЋ Р·Р°РїРёСЃСЊ РЅР° СЃС‚СЂР°РЅРёС†Рµ РєР»РёРµРЅС‚Р°.
+                Измените дату, фильтр статуса или поисковый запрос. Также можно создать тестовую запись на странице клиента.
               </p>
-              <a href="/book" class="btn btn-primary mt-4">РЎРѕР·РґР°С‚СЊ Р·Р°РїРёСЃСЊ</a>
+
+              <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
             </div>
           <% else %>
             <div class="mt-6 overflow-x-auto">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Р’СЂРµРјСЏ</th>
-
-                    <th>РљР»РёРµРЅС‚</th>
-
-                    <th>РўРµР»РµС„РѕРЅ</th>
-
-                    <th>РђРІС‚РѕРјРѕР±РёР»СЊ</th>
-
-                    <th>РЈСЃР»СѓРіР°</th>
-
-                    <th>РЎС‚Р°С‚СѓСЃ</th>
-
-                    <th>Р”РµР№СЃС‚РІРёСЏ</th>
-
-                    <th>РЎРѕР·РґР°РЅР°</th>
+                    <th>Время</th>
+                    <th>Клиент</th>
+                    <th>Телефон</th>
+                    <th>Автомобиль</th>
+                    <th>Услуга</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                    <th>Создана</th>
                   </tr>
                 </thead>
 
@@ -397,7 +510,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                               phx-value-id={booking.id}
                               class="btn btn-success btn-sm"
                             >
-                              РџРѕРґС‚РІРµСЂРґРёС‚СЊ
+                              Подтвердить
                             </button>
                           <% end %>
 
@@ -407,10 +520,10 @@ defmodule AutoslotWeb.AdminBookingLive do
                               phx-value-id={booking.id}
                               class="btn btn-error btn-sm"
                             >
-                              РћС‚РјРµРЅРёС‚СЊ
+                              Отменить
                             </button>
                           <% else %>
-                            <span class="text-sm text-base-content/50">РќРµС‚ РґРµР№СЃС‚РІРёР№</span>
+                            <span class="text-sm text-base-content/50">Нет действий</span>
                           <% end %>
                         </div>
                       </td>
@@ -431,42 +544,45 @@ defmodule AutoslotWeb.AdminBookingLive do
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div class="w-full max-w-lg rounded-xl bg-base-100 p-6 shadow-xl">
             <h2 class="text-2xl font-bold text-base-content">
-              РћС‚РјРµРЅРёС‚СЊ Р·Р°РїРёСЃСЊ?
+              Отменить запись?
             </h2>
 
             <p class="mt-3 text-base-content/70">
-              Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ РѕС‚РјРµРЅРёС‚СЊ Р·Р°РїРёСЃСЊ РєР»РёРµРЅС‚Р°?
+              Вы действительно хотите отменить запись клиента?
             </p>
 
             <div class="mt-5 rounded-lg border border-base-300 bg-base-200 p-4">
               <div class="grid gap-2 text-sm">
                 <div>
-                  <span class="font-semibold">РљР»РёРµРЅС‚:</span> {@booking_to_cancel.customer_name}
+                  <span class="font-semibold">Клиент:</span>
+                  {@booking_to_cancel.customer_name}
                 </div>
 
                 <div>
-                  <span class="font-semibold">РўРµР»РµС„РѕРЅ:</span> {@booking_to_cancel.phone}
+                  <span class="font-semibold">Телефон:</span>
+                  {@booking_to_cancel.phone}
                 </div>
 
                 <div>
-                  <span class="font-semibold">РђРІС‚РѕРјРѕР±РёР»СЊ:</span> {@booking_to_cancel.vehicle_plate}
+                  <span class="font-semibold">Автомобиль:</span>
+                  {@booking_to_cancel.vehicle_plate}
                 </div>
 
                 <div>
-                  <span class="font-semibold">РЈСЃР»СѓРіР°:</span> {service_name(@booking_to_cancel)}
+                  <span class="font-semibold">Услуга:</span>
+                  {service_name(@booking_to_cancel)}
                 </div>
 
                 <div>
-                  <span class="font-semibold">Р’СЂРµРјСЏ:</span> {format_time_range(
-                    @booking_to_cancel
-                  )}
+                  <span class="font-semibold">Время:</span>
+                  {format_time_range(@booking_to_cancel)}
                 </div>
               </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
               <button phx-click="dismiss_cancel_booking" class="btn btn-outline">
-                РќРµС‚, РѕСЃС‚Р°РІРёС‚СЊ
+                Нет, оставить
               </button>
 
               <button
@@ -474,7 +590,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                 phx-value-id={@booking_to_cancel.id}
                 class="btn btn-error"
               >
-                Р”Р°, РѕС‚РјРµРЅРёС‚СЊ
+                Да, отменить
               </button>
             </div>
           </div>
