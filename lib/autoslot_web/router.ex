@@ -20,6 +20,7 @@ defmodule AutoslotWeb.Router do
     get "/", PageController, :home
 
     live "/book", CustomerBookingLive
+    live "/admin/bookings", AdminBookingLive
 
     live "/services", ServiceLive.Index, :index
     live "/services/new", ServiceLive.Form, :new
