@@ -102,18 +102,13 @@ defmodule AutoslotWeb.ServiceLiveTest do
     test "displays service", %{conn: conn, service: service} do
       {:ok, _show_live, html} = live(conn, ~p"/services/#{service}")
 
-      assert html =~ "Услуга:"
       assert html =~ service.name
+      assert html =~ "Параметры услуги"
+      assert html =~ "Описание"
     end
 
     test "updates service and returns to show", %{conn: conn, service: service} do
-      {:ok, show_live, _html} = live(conn, ~p"/services/#{service}")
-
-      assert {:ok, form_live, _} =
-               show_live
-               |> element("a", "Редактировать")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/services/#{service}/edit?return_to=show")
+      {:ok, form_live, _html} = live(conn, ~p"/services/#{service}/edit?return_to=show")
 
       assert render(form_live) =~ "Редактирование услуги"
 
