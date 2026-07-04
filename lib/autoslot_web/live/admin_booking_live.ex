@@ -3,8 +3,6 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   alias Autoslot.Bookings
 
-  @statuses ["pending", "confirmed", "cancelled"]
-
   @impl true
   def mount(_params, _session, socket) do
     selected_date = Date.utc_today()
@@ -15,7 +13,7 @@ defmodule AutoslotWeb.AdminBookingLive do
       |> assign(:page_title, "Управление записями")
       |> assign(:selected_date, Date.to_iso8601(selected_date))
       |> assign(:bookings, bookings)
-      |> assign(:statuses, @statuses)
+      |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
       |> assign(:error_message, nil)
 
@@ -31,6 +29,7 @@ defmodule AutoslotWeb.AdminBookingLive do
       socket
       |> assign(:selected_date, Date.to_iso8601(selected_date))
       |> assign(:bookings, bookings)
+      |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
       |> assign(:error_message, nil)
 
@@ -38,7 +37,37 @@ defmodule AutoslotWeb.AdminBookingLive do
   end
 
   @impl true
-  def handle_event("update_status", %{"booking_id" => booking_id, "status" => status}, socket) do
+  def handle_event("confirm_booking", %{"id" => booking_id}, socket) do
+    update_booking_status(socket, booking_id, "confirmed", "Запись подтверждена.")
+  end
+
+  @impl true
+  def handle_event("request_cancel_booking", %{"id" => booking_id}, socket) do
+    booking_to_cancel =
+      Enum.find(socket.assigns.bookings, fn booking ->
+        Integer.to_string(booking.id) == booking_id
+      end)
+
+    socket =
+      socket
+      |> assign(:booking_to_cancel, booking_to_cancel)
+      |> assign(:success_message, nil)
+      |> assign(:error_message, nil)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("dismiss_cancel_booking", _params, socket) do
+    {:noreply, assign(socket, :booking_to_cancel, nil)}
+  end
+
+  @impl true
+  def handle_event("cancel_booking", %{"id" => booking_id}, socket) do
+    update_booking_status(socket, booking_id, "cancelled", "Запись отменена.")
+  end
+
+  defp update_booking_status(socket, booking_id, status, success_message) do
     booking = Bookings.get_booking!(booking_id)
 
     case Bookings.update_booking(booking, %{status: status}) do
@@ -49,7 +78,8 @@ defmodule AutoslotWeb.AdminBookingLive do
         socket =
           socket
           |> assign(:bookings, bookings)
-          |> assign(:success_message, "Статус записи обновлен.")
+          |> assign(:booking_to_cancel, nil)
+          |> assign(:success_message, success_message)
           |> assign(:error_message, nil)
 
         {:noreply, socket}
@@ -61,38 +91,6 @@ defmodule AutoslotWeb.AdminBookingLive do
           |> assign(:error_message, format_changeset_errors(changeset))
 
         {:noreply, socket}
-    end
-  end
-
-  @impl true
-  def handle_event("confirm_booking", %{"id" => booking_id}, socket) do
-    update_status(socket, booking_id, "confirmed", "Запись подтверждена.")
-  end
-
-  @impl true
-  def handle_event("cancel_booking", %{"id" => booking_id}, socket) do
-    update_status(socket, booking_id, "cancelled", "Запись отменена.")
-  end
-
-  defp update_status(socket, booking_id, status, message) do
-    booking = Bookings.get_booking!(booking_id)
-
-    case Bookings.update_booking(booking, %{status: status}) do
-      {:ok, _} ->
-        selected_date = parse_date(socket.assigns.selected_date)
-        bookings = Bookings.list_bookings_with_services_for_date(selected_date)
-
-        {:noreply,
-         socket
-         |> assign(:bookings, bookings)
-         |> assign(:success_message, message)
-         |> assign(:error_message, nil)}
-
-      {:error, changeset} ->
-        {:noreply,
-         socket
-         |> assign(:success_message, nil)
-         |> assign(:error_message, format_changeset_errors(changeset))}
     end
   end
 
@@ -233,7 +231,7 @@ defmodule AutoslotWeb.AdminBookingLive do
 
                     <th>Статус</th>
 
-                    <th>Изменить статус</th>
+                    <th>Действия</th>
 
                     <th>Создана</th>
                   </tr>
@@ -282,12 +280,14 @@ defmodule AutoslotWeb.AdminBookingLive do
 
                           <%= if booking.status != "cancelled" do %>
                             <button
-                              phx-click="cancel_booking"
+                              phx-click="request_cancel_booking"
                               phx-value-id={booking.id}
                               class="btn btn-error btn-sm"
                             >
                               Отменить
                             </button>
+                          <% else %>
+                            <span class="text-sm text-base-content/50">Нет действий</span>
                           <% end %>
                         </div>
                       </td>
@@ -303,6 +303,58 @@ defmodule AutoslotWeb.AdminBookingLive do
           <% end %>
         </section>
       </div>
+
+      <%= if @booking_to_cancel do %>
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div class="w-full max-w-lg rounded-xl bg-base-100 p-6 shadow-xl">
+            <h2 class="text-2xl font-bold text-base-content">
+              Отменить запись?
+            </h2>
+
+            <p class="mt-3 text-base-content/70">
+              Вы действительно хотите отменить запись клиента?
+            </p>
+
+            <div class="mt-5 rounded-lg border border-base-300 bg-base-200 p-4">
+              <div class="grid gap-2 text-sm">
+                <div>
+                  <span class="font-semibold">Клиент:</span> {@booking_to_cancel.customer_name}
+                </div>
+
+                <div>
+                  <span class="font-semibold">Телефон:</span> {@booking_to_cancel.phone}
+                </div>
+
+                <div>
+                  <span class="font-semibold">Автомобиль:</span> {@booking_to_cancel.vehicle_plate}
+                </div>
+
+                <div>
+                  <span class="font-semibold">Услуга:</span> {service_name(@booking_to_cancel)}
+                </div>
+
+                <div>
+                  <span class="font-semibold">Время:</span> {format_time_range(@booking_to_cancel)}
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+              <button phx-click="dismiss_cancel_booking" class="btn btn-outline">
+                Нет, оставить
+              </button>
+
+              <button
+                phx-click="cancel_booking"
+                phx-value-id={@booking_to_cancel.id}
+                class="btn btn-error"
+              >
+                Да, отменить
+              </button>
+            </div>
+          </div>
+        </div>
+      <% end %>
     </main>
     """
   end
