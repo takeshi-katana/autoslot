@@ -41,6 +41,18 @@ defmodule Autoslot.Bookings do
   end
 
   @doc """
+  Returns bookings for a specific date with preloaded services.
+
+  This function is intended for admin-facing screens where service names
+  should be displayed together with booking data.
+  """
+  def list_bookings_with_services_for_date(%Date{} = date) do
+    date
+    |> list_bookings_for_date()
+    |> Repo.preload(:service)
+  end
+
+  @doc """
   Returns active bookings for a specific date.
 
   Cancelled bookings are excluded because they should not block time slots.
