@@ -64,6 +64,38 @@ defmodule AutoslotWeb.AdminBookingLive do
     end
   end
 
+  @impl true
+  def handle_event("confirm_booking", %{"id" => booking_id}, socket) do
+    update_status(socket, booking_id, "confirmed", "Запись подтверждена.")
+  end
+
+  @impl true
+  def handle_event("cancel_booking", %{"id" => booking_id}, socket) do
+    update_status(socket, booking_id, "cancelled", "Запись отменена.")
+  end
+
+  defp update_status(socket, booking_id, status, message) do
+    booking = Bookings.get_booking!(booking_id)
+
+    case Bookings.update_booking(booking, %{status: status}) do
+      {:ok, _} ->
+        selected_date = parse_date(socket.assigns.selected_date)
+        bookings = Bookings.list_bookings_with_services_for_date(selected_date)
+
+        {:noreply,
+         socket
+         |> assign(:bookings, bookings)
+         |> assign(:success_message, message)
+         |> assign(:error_message, nil)}
+
+      {:error, changeset} ->
+        {:noreply,
+         socket
+         |> assign(:success_message, nil)
+         |> assign(:error_message, format_changeset_errors(changeset))}
+    end
+  end
+
   defp parse_date(date_string) do
     case Date.from_iso8601(date_string) do
       {:ok, date} -> date
@@ -237,20 +269,27 @@ defmodule AutoslotWeb.AdminBookingLive do
                       </td>
 
                       <td>
-                        <form phx-submit="update_status" class="flex min-w-56 gap-2">
-                          <input type="hidden" name="booking_id" value={booking.id} />
-                          <select name="status" class="select select-bordered select-sm">
-                            <%= for status <- @statuses do %>
-                              <option value={status} selected={booking.status == status}>
-                                {status_label(status)}
-                              </option>
-                            <% end %>
-                          </select>
+                        <div class="flex gap-2">
+                          <%= if booking.status == "pending" do %>
+                            <button
+                              phx-click="confirm_booking"
+                              phx-value-id={booking.id}
+                              class="btn btn-success btn-sm"
+                            >
+                              Подтвердить
+                            </button>
+                          <% end %>
 
-                          <button type="submit" class="btn btn-primary btn-sm">
-                            Сохранить
-                          </button>
-                        </form>
+                          <%= if booking.status != "cancelled" do %>
+                            <button
+                              phx-click="cancel_booking"
+                              phx-value-id={booking.id}
+                              class="btn btn-error btn-sm"
+                            >
+                              Отменить
+                            </button>
+                          <% end %>
+                        </div>
                       </td>
 
                       <td class="text-sm text-base-content/60">
