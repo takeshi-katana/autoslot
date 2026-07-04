@@ -14,15 +14,18 @@ defmodule AutoslotWeb.AdminBookingLive do
   def mount(_params, _session, socket) do
     selected_date = Date.utc_today()
     selected_status = "all"
-    bookings = load_bookings(selected_date, selected_status)
+    search_query = ""
+    {bookings, summary} = load_admin_data(selected_date, selected_status, search_query)
 
     socket =
       socket
       |> assign(:page_title, "Управление записями")
       |> assign(:selected_date, Date.to_iso8601(selected_date))
       |> assign(:selected_status, selected_status)
+      |> assign(:search_query, search_query)
       |> assign(:status_filters, @status_filters)
       |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
       |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
       |> assign(:error_message, nil)
@@ -33,12 +36,19 @@ defmodule AutoslotWeb.AdminBookingLive do
   @impl true
   def handle_event("change_date", %{"date" => date_string}, socket) do
     selected_date = parse_date(date_string)
-    bookings = load_bookings(selected_date, socket.assigns.selected_status)
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        socket.assigns.selected_status,
+        socket.assigns.search_query
+      )
 
     socket =
       socket
       |> assign(:selected_date, Date.to_iso8601(selected_date))
       |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
       |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
       |> assign(:error_message, nil)
@@ -50,12 +60,67 @@ defmodule AutoslotWeb.AdminBookingLive do
   def handle_event("change_status_filter", %{"status" => selected_status}, socket) do
     selected_date = parse_date(socket.assigns.selected_date)
     selected_status = normalize_status_filter(selected_status)
-    bookings = load_bookings(selected_date, selected_status)
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        selected_status,
+        socket.assigns.search_query
+      )
 
     socket =
       socket
       |> assign(:selected_status, selected_status)
       |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
+      |> assign(:booking_to_cancel, nil)
+      |> assign(:success_message, nil)
+      |> assign(:error_message, nil)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("search_bookings", %{"search_query" => search_query}, socket) do
+    selected_date = parse_date(socket.assigns.selected_date)
+    search_query = String.trim(search_query)
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        socket.assigns.selected_status,
+        search_query
+      )
+
+    socket =
+      socket
+      |> assign(:search_query, search_query)
+      |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
+      |> assign(:booking_to_cancel, nil)
+      |> assign(:success_message, nil)
+      |> assign(:error_message, nil)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_search", _params, socket) do
+    selected_date = parse_date(socket.assigns.selected_date)
+    search_query = ""
+
+    {bookings, summary} =
+      load_admin_data(
+        selected_date,
+        socket.assigns.selected_status,
+        search_query
+      )
+
+    socket =
+      socket
+      |> assign(:search_query, search_query)
+      |> assign(:bookings, bookings)
+      |> assign(:summary, summary)
       |> assign(:booking_to_cancel, nil)
       |> assign(:success_message, nil)
       |> assign(:error_message, nil)
@@ -100,11 +165,18 @@ defmodule AutoslotWeb.AdminBookingLive do
     case Bookings.update_booking(booking, %{status: status}) do
       {:ok, _booking} ->
         selected_date = parse_date(socket.assigns.selected_date)
-        bookings = load_bookings(selected_date, socket.assigns.selected_status)
+
+        {bookings, summary} =
+          load_admin_data(
+            selected_date,
+            socket.assigns.selected_status,
+            socket.assigns.search_query
+          )
 
         socket =
           socket
           |> assign(:bookings, bookings)
+          |> assign(:summary, summary)
           |> assign(:booking_to_cancel, nil)
           |> assign(:success_message, success_message)
           |> assign(:error_message, nil)
@@ -121,10 +193,16 @@ defmodule AutoslotWeb.AdminBookingLive do
     end
   end
 
-  defp load_bookings(%Date{} = date, selected_status) do
-    date
-    |> Bookings.list_bookings_with_services_for_date()
-    |> filter_bookings_by_status(selected_status)
+  defp load_admin_data(%Date{} = date, selected_status, search_query) do
+    all_bookings = Bookings.list_bookings_with_services_for_date(date)
+    summary = build_summary(all_bookings)
+
+    filtered_bookings =
+      all_bookings
+      |> filter_bookings_by_status(selected_status)
+      |> filter_bookings_by_search(search_query)
+
+    {filtered_bookings, summary}
   end
 
   defp filter_bookings_by_status(bookings, "all"), do: bookings
@@ -132,6 +210,49 @@ defmodule AutoslotWeb.AdminBookingLive do
   defp filter_bookings_by_status(bookings, selected_status) do
     Enum.filter(bookings, fn booking ->
       booking.status == selected_status
+    end)
+  end
+
+  defp filter_bookings_by_search(bookings, ""), do: bookings
+
+  defp filter_bookings_by_search(bookings, search_query) do
+    normalized_query = normalize_search_value(search_query)
+
+    Enum.filter(bookings, fn booking ->
+      [
+        booking.customer_name,
+        booking.phone,
+        booking.vehicle_plate,
+        service_name(booking)
+      ]
+      |> Enum.any?(fn value ->
+        value
+        |> normalize_search_value()
+        |> String.contains?(normalized_query)
+      end)
+    end)
+  end
+
+  defp normalize_search_value(nil), do: ""
+
+  defp normalize_search_value(value) do
+    value
+    |> to_string()
+    |> String.downcase()
+  end
+
+  defp build_summary(bookings) do
+    %{
+      total: length(bookings),
+      pending: count_by_status(bookings, "pending"),
+      confirmed: count_by_status(bookings, "confirmed"),
+      cancelled: count_by_status(bookings, "cancelled")
+    }
+  end
+
+  defp count_by_status(bookings, status) do
+    Enum.count(bookings, fn booking ->
+      booking.status == status
     end)
   end
 
@@ -213,6 +334,7 @@ defmodule AutoslotWeb.AdminBookingLive do
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
+
             <h1 class="mt-4 text-4xl font-bold text-base-content">
               Управление записями
             </h1>
@@ -227,6 +349,28 @@ defmodule AutoslotWeb.AdminBookingLive do
             <a href="/services" class="btn btn-outline">Каталог услуг</a>
           </div>
         </div>
+
+        <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-xl bg-base-100 p-5 shadow">
+            <div class="text-sm text-base-content/60">Всего записей</div>
+            <div class="mt-2 text-3xl font-bold">{@summary.total}</div>
+          </div>
+
+          <div class="rounded-xl bg-base-100 p-5 shadow">
+            <div class="text-sm text-base-content/60">Ожидают</div>
+            <div class="mt-2 text-3xl font-bold text-warning">{@summary.pending}</div>
+          </div>
+
+          <div class="rounded-xl bg-base-100 p-5 shadow">
+            <div class="text-sm text-base-content/60">Подтверждены</div>
+            <div class="mt-2 text-3xl font-bold text-success">{@summary.confirmed}</div>
+          </div>
+
+          <div class="rounded-xl bg-base-100 p-5 shadow">
+            <div class="text-sm text-base-content/60">Отменены</div>
+            <div class="mt-2 text-3xl font-bold text-error">{@summary.cancelled}</div>
+          </div>
+        </section>
 
         <section class="rounded-xl bg-base-100 p-6 shadow">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -255,6 +399,35 @@ defmodule AutoslotWeb.AdminBookingLive do
                   </select>
                 </label>
               </form>
+
+              <form
+                phx-change="search_bookings"
+                phx-submit="search_bookings"
+                class="flex flex-col gap-2"
+              >
+                <label class="grid gap-2">
+                  <span class="font-medium">Поиск</span>
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      name="search_query"
+                      value={@search_query}
+                      placeholder="Клиент, телефон, авто или услуга"
+                      class="input input-bordered w-80 max-w-full"
+                    />
+
+                    <%= if @search_query != "" do %>
+                      <button
+                        type="button"
+                        phx-click="clear_search"
+                        class="btn btn-outline"
+                      >
+                        Очистить
+                      </button>
+                    <% end %>
+                  </div>
+                </label>
+              </form>
             </div>
 
             <div class="text-sm text-base-content/60">
@@ -279,8 +452,9 @@ defmodule AutoslotWeb.AdminBookingLive do
               <h2 class="text-xl font-semibold">На выбранную дату записей нет</h2>
 
               <p class="mt-2 text-base-content/60">
-                Измените дату или фильтр статуса. Также можно создать тестовую запись на странице клиента.
+                Измените дату, фильтр статуса или поисковый запрос. Также можно создать тестовую запись на странице клиента.
               </p>
+
               <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
             </div>
           <% else %>
@@ -289,19 +463,12 @@ defmodule AutoslotWeb.AdminBookingLive do
                 <thead>
                   <tr>
                     <th>Время</th>
-
                     <th>Клиент</th>
-
                     <th>Телефон</th>
-
                     <th>Автомобиль</th>
-
                     <th>Услуга</th>
-
                     <th>Статус</th>
-
                     <th>Действия</th>
-
                     <th>Создана</th>
                   </tr>
                 </thead>
@@ -387,23 +554,28 @@ defmodule AutoslotWeb.AdminBookingLive do
             <div class="mt-5 rounded-lg border border-base-300 bg-base-200 p-4">
               <div class="grid gap-2 text-sm">
                 <div>
-                  <span class="font-semibold">Клиент:</span> {@booking_to_cancel.customer_name}
+                  <span class="font-semibold">Клиент:</span>
+                  {@booking_to_cancel.customer_name}
                 </div>
 
                 <div>
-                  <span class="font-semibold">Телефон:</span> {@booking_to_cancel.phone}
+                  <span class="font-semibold">Телефон:</span>
+                  {@booking_to_cancel.phone}
                 </div>
 
                 <div>
-                  <span class="font-semibold">Автомобиль:</span> {@booking_to_cancel.vehicle_plate}
+                  <span class="font-semibold">Автомобиль:</span>
+                  {@booking_to_cancel.vehicle_plate}
                 </div>
 
                 <div>
-                  <span class="font-semibold">Услуга:</span> {service_name(@booking_to_cancel)}
+                  <span class="font-semibold">Услуга:</span>
+                  {service_name(@booking_to_cancel)}
                 </div>
 
                 <div>
-                  <span class="font-semibold">Время:</span> {format_time_range(@booking_to_cancel)}
+                  <span class="font-semibold">Время:</span>
+                  {format_time_range(@booking_to_cancel)}
                 </div>
               </div>
             </div>
