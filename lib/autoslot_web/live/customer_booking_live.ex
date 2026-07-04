@@ -171,16 +171,16 @@ defmodule AutoslotWeb.CustomerBookingLive do
           <h1 class="mt-4 text-4xl font-bold text-base-content">
             Онлайн-запись в автосервис
           </h1>
-          
+
           <p class="mt-3 max-w-2xl text-base-content/70">
             Выберите услугу, дату и свободное время. После отправки формы запись будет создана со статусом ожидания подтверждения.
           </p>
         </div>
-        
+
         <%= if Enum.empty?(@services) do %>
           <div class="rounded-lg border border-warning bg-warning/10 p-6">
             <h2 class="text-xl font-semibold">Услуги пока не добавлены</h2>
-            
+
             <p class="mt-2">
               Сначала добавьте услуги в каталог или запустите seed-данные.
             </p>
@@ -189,19 +189,19 @@ defmodule AutoslotWeb.CustomerBookingLive do
           <div class="grid gap-6 lg:grid-cols-[1fr_360px]">
             <section class="rounded-xl bg-base-100 p-6 shadow">
               <h2 class="text-2xl font-semibold">Данные записи</h2>
-              
+
               <%= if @success_message do %>
                 <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
                   {@success_message}
                 </div>
               <% end %>
-              
+
               <%= if @error_message do %>
                 <div class="mt-4 rounded-lg border border-error bg-error/10 p-4 text-error">
                   {@error_message}
                 </div>
               <% end %>
-              
+
               <form phx-change="change_selection" class="mt-6 grid gap-4">
                 <label class="grid gap-2">
                   <span class="font-medium">Услуга</span>
@@ -216,7 +216,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     <% end %>
                   </select>
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Дата</span>
                   <input
@@ -227,7 +227,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   />
                 </label>
               </form>
-              
+
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
                 <label class="grid gap-2">
@@ -246,7 +246,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     </select>
                   <% end %>
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Имя клиента</span>
                   <input
@@ -257,7 +257,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Телефон</span>
                   <input
@@ -268,7 +268,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Номер автомобиля</span>
                   <input
@@ -279,7 +279,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-                
+
                 <button
                   type="submit"
                   class="btn btn-primary mt-2"
@@ -289,14 +289,14 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 </button>
               </form>
             </section>
-            
+
             <aside class="rounded-xl bg-base-100 p-6 shadow">
               <h2 class="text-xl font-semibold">Доступные слоты</h2>
-              
+
               <p class="mt-2 text-sm text-base-content/70">
                 Система показывает только те интервалы, которые не пересекаются с активными записями.
               </p>
-              
+
               <div class="mt-5 grid gap-2">
                 <%= for slot <- @slots do %>
                   <div class="rounded-lg border border-base-300 px-4 py-3">
