@@ -20,6 +20,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
       |> assign(:selected_service, selected_service)
       |> assign(:selected_service_id, selected_service_id(selected_service))
       |> assign(:selected_date, Date.to_iso8601(selected_date))
+      |> assign(:today, Date.to_iso8601(selected_date))
       |> assign(:slots, slots)
       |> assign(:selected_slot, selected_slot_value(List.first(slots)))
       |> assign(:customer_name, "")
@@ -37,7 +38,8 @@ defmodule AutoslotWeb.CustomerBookingLive do
     selected_date = Map.get(params, "date", socket.assigns.selected_date)
 
     service = find_service(socket.assigns.services, selected_service_id)
-    date = parse_date(selected_date)
+    date = parse_booking_date(selected_date)
+    normalized_date = Date.to_iso8601(date)
 
     slots = load_available_slots(date, service)
 
@@ -45,7 +47,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
       socket
       |> assign(:selected_service, service)
       |> assign(:selected_service_id, selected_service_id)
-      |> assign(:selected_date, selected_date)
+      |> assign(:selected_date, normalized_date)
       |> assign(:slots, slots)
       |> assign(:selected_slot, selected_slot_value(List.first(slots)))
       |> assign(:success_message, nil)
@@ -79,7 +81,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
         case Bookings.create_booking(attrs) do
           {:ok, _booking} ->
-            date = parse_date(socket.assigns.selected_date)
+            date = parse_booking_date(socket.assigns.selected_date)
             updated_slots = load_available_slots(date, service)
 
             socket =
@@ -113,6 +115,16 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
   defp selected_service_id(nil), do: nil
   defp selected_service_id(service), do: Integer.to_string(service.id)
+
+  defp parse_booking_date(date_string) do
+    date = parse_date(date_string)
+    today = Date.utc_today()
+
+    case Date.compare(date, today) do
+      :lt -> today
+      _ -> date
+    end
+  end
 
   defp parse_date(date_string) do
     case Date.from_iso8601(date_string) do
@@ -249,8 +261,12 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     type="date"
                     name="date"
                     value={@selected_date}
+                    min={@today}
                     class="input input-bordered w-full"
                   />
+                  <span class="text-xs text-base-content/50">
+                    Запись доступна с сегодняшней даты.
+                  </span>
                 </label>
               </form>
 
