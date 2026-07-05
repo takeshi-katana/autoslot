@@ -5,128 +5,151 @@
         <div class="badge badge-primary badge-lg">
           Phoenix LiveView MVP
         </div>
-
+        
         <h1 class="mt-6 max-w-4xl text-5xl font-bold tracking-tight text-base-content lg:text-6xl">
           AutoSlot — онлайн-запись в автосервис
         </h1>
-
+        
         <p class="mt-6 max-w-2xl text-lg leading-8 text-base-content/70">
           MVP-система для записи клиентов на услуги автосервиса. Клиент выбирает услугу,
           дату и свободный слот, а сотрудник управляет заявками через административную панель.
         </p>
-
+        
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
           <a href="/book" class="btn btn-primary btn-lg">
             Записаться на услугу
           </a>
-
+          
+          <a href="/my-bookings" class="btn btn-outline btn-lg">
+            Мои записи
+          </a>
+          
           <a href="/admin/bookings" class="btn btn-outline btn-lg">
             Открыть админку
           </a>
         </div>
-
+        
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
           <div class="rounded-xl bg-base-100 p-4 shadow">
             <div class="text-2xl font-bold">LiveView</div>
+            
             <div class="mt-1 text-sm text-base-content/60">
               Интерфейс без отдельного frontend-фреймворка
             </div>
           </div>
-
+          
           <div class="rounded-xl bg-base-100 p-4 shadow">
             <div class="text-2xl font-bold">PostgreSQL</div>
+            
             <div class="mt-1 text-sm text-base-content/60">
               Хранение услуг, записей и статусов
             </div>
           </div>
-
+          
           <div class="rounded-xl bg-base-100 p-4 shadow">
             <div class="text-2xl font-bold">ExUnit</div>
+            
             <div class="mt-1 text-sm text-base-content/60">
               Тесты бизнес-логики записи
             </div>
           </div>
         </div>
       </div>
-
+      
       <div class="rounded-2xl bg-base-100 p-6 shadow-xl">
         <h2 class="text-2xl font-semibold">Что уже реализовано</h2>
-
+        
         <div class="mt-6 grid gap-4">
           <div class="rounded-xl border border-base-300 p-4">
             <h3 class="font-semibold">Каталог услуг</h3>
+            
             <p class="mt-1 text-sm text-base-content/60">
               Услуги автосервиса с описанием, длительностью и ценой.
             </p>
           </div>
-
+          
           <div class="rounded-xl border border-base-300 p-4">
             <h3 class="font-semibold">Расчет свободных слотов</h3>
+            
             <p class="mt-1 text-sm text-base-content/60">
               Система учитывает длительность услуги и уже занятые интервалы.
             </p>
           </div>
-
+          
+          <div class="rounded-xl border border-base-300 p-4">
+            <h3 class="font-semibold">Просмотр своих записей</h3>
+            
+            <p class="mt-1 text-sm text-base-content/60">
+              Клиент может найти свои записи по номеру телефона и отменить активную запись.
+            </p>
+          </div>
+          
           <div class="rounded-xl border border-base-300 p-4">
             <h3 class="font-semibold">Административная панель</h3>
+            
             <p class="mt-1 text-sm text-base-content/60">
               Фильтры, поиск, сводка по статусам, подтверждение и отмена записей.
             </p>
           </div>
-
-          <div class="rounded-xl border border-base-300 p-4">
-            <h3 class="font-semibold">Защита от пересечений</h3>
-            <p class="mt-1 text-sm text-base-content/60">
-              Активные записи не могут пересекаться по времени.
-            </p>
-          </div>
         </div>
-
-        <div class="mt-6 flex gap-3">
+        
+        <div class="mt-6 flex flex-wrap gap-3">
           <a href="/services" class="btn btn-outline">
             Каталог услуг
           </a>
-
+          
+          <a href="/my-bookings" class="btn btn-outline">
+            Мои записи
+          </a>
+          
           <a href="/admin/bookings" class="btn btn-primary">
             Управление записями
           </a>
         </div>
       </div>
     </section>
-
+    
     <section class="mt-12 rounded-2xl bg-base-100 p-6 shadow">
       <h2 class="text-2xl font-semibold">Пользовательский сценарий</h2>
-
+      
       <div class="mt-6 grid gap-4 md:grid-cols-4">
         <div class="rounded-xl bg-base-200 p-4">
           <div class="text-sm font-semibold text-primary">Шаг 1</div>
+          
           <div class="mt-2 font-medium">Выбор услуги</div>
+          
           <p class="mt-1 text-sm text-base-content/60">
             Клиент выбирает нужную услугу из каталога.
           </p>
         </div>
-
+        
         <div class="rounded-xl bg-base-200 p-4">
           <div class="text-sm font-semibold text-primary">Шаг 2</div>
+          
           <div class="mt-2 font-medium">Выбор даты и времени</div>
+          
           <p class="mt-1 text-sm text-base-content/60">
             Система показывает только доступные слоты.
           </p>
         </div>
-
+        
         <div class="rounded-xl bg-base-200 p-4">
           <div class="text-sm font-semibold text-primary">Шаг 3</div>
+          
           <div class="mt-2 font-medium">Создание записи</div>
+          
           <p class="mt-1 text-sm text-base-content/60">
             Клиент вводит имя, телефон и номер автомобиля.
           </p>
         </div>
-
+        
         <div class="rounded-xl bg-base-200 p-4">
           <div class="text-sm font-semibold text-primary">Шаг 4</div>
-          <div class="mt-2 font-medium">Работа администратора</div>
+          
+          <div class="mt-2 font-medium">Проверка статуса</div>
+          
           <p class="mt-1 text-sm text-base-content/60">
-            Сотрудник подтверждает или отменяет запись.
+            Клиент находит запись по телефону, а администратор управляет заявкой.
           </p>
         </div>
       </div>
