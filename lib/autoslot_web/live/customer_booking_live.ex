@@ -166,15 +166,23 @@ defmodule AutoslotWeb.CustomerBookingLive do
     ~H"""
     <main class="min-h-screen bg-base-200 px-6 py-10">
       <div class="mx-auto max-w-5xl">
-        <div class="mb-8">
-          <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
-          <h1 class="mt-4 text-4xl font-bold text-base-content">
-            Онлайн-запись в автосервис
-          </h1>
+        <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
 
-          <p class="mt-3 max-w-2xl text-base-content/70">
-            Выберите услугу, дату и свободное время. После отправки формы запись будет создана со статусом ожидания подтверждения.
-          </p>
+            <h1 class="mt-4 text-4xl font-bold text-base-content">
+              Онлайн-запись в автосервис
+            </h1>
+
+            <p class="mt-3 max-w-2xl text-base-content/70">
+              Выберите услугу, дату и свободное время. После отправки формы запись будет создана
+              со статусом ожидания подтверждения.
+            </p>
+          </div>
+
+          <a href="/my-bookings" class="btn btn-outline">
+            Мои записи
+          </a>
         </div>
 
         <%= if Enum.empty?(@services) do %>
@@ -188,11 +196,29 @@ defmodule AutoslotWeb.CustomerBookingLive do
         <% else %>
           <div class="grid gap-6 lg:grid-cols-[1fr_360px]">
             <section class="rounded-xl bg-base-100 p-6 shadow">
-              <h2 class="text-2xl font-semibold">Данные записи</h2>
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2 class="text-2xl font-semibold">Данные записи</h2>
+
+                  <p class="mt-2 text-sm text-base-content/60">
+                    Заполните контактные данные и выберите подходящий слот.
+                  </p>
+                </div>
+
+                <a href="/my-bookings" class="btn btn-outline btn-sm">
+                  Проверить запись
+                </a>
+              </div>
 
               <%= if @success_message do %>
                 <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
                   {@success_message}
+
+                  <div class="mt-3">
+                    <a href="/my-bookings" class="btn btn-success btn-sm">
+                      Перейти к моим записям
+                    </a>
+                  </div>
                 </div>
               <% end %>
 
@@ -230,6 +256,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
+
                 <label class="grid gap-2">
                   <span class="font-medium">Свободное время</span>
                   <%= if Enum.empty?(@slots) do %>
@@ -280,11 +307,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   />
                 </label>
 
-                <button
-                  type="submit"
-                  class="btn btn-primary mt-2"
-                  disabled={Enum.empty?(@slots)}
-                >
+                <button type="submit" class="btn btn-primary mt-2" disabled={Enum.empty?(@slots)}>
                   Создать запись
                 </button>
               </form>
@@ -294,7 +317,8 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <h2 class="text-xl font-semibold">Доступные слоты</h2>
 
               <p class="mt-2 text-sm text-base-content/70">
-                Система показывает только те интервалы, которые не пересекаются с активными записями.
+                Система показывает только те интервалы, которые не пересекаются с активными
+                записями.
               </p>
 
               <div class="mt-5 grid gap-2">
@@ -303,6 +327,18 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     {format_slot(slot)}
                   </div>
                 <% end %>
+              </div>
+
+              <div class="mt-6 rounded-xl bg-base-200 p-4 text-sm text-base-content/70">
+                <div class="font-semibold text-base-content">Уже записывались?</div>
+
+                <p class="mt-1">
+                  Найдите свои записи по номеру телефона и проверьте статус заявки.
+                </p>
+
+                <a href="/my-bookings" class="btn btn-outline btn-sm mt-4">
+                  Мои записи
+                </a>
               </div>
             </aside>
           </div>
