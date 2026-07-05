@@ -13,17 +13,17 @@ defmodule AutoslotWeb.ServiceLive.Form do
           <a href={return_path(@return_to, @service)} class="text-sm text-primary hover:underline">
             ← Назад
           </a>
-          
+
           <h1 class="mt-4 text-4xl font-bold text-base-content">
             {@page_title}
           </h1>
-          
+
           <p class="mt-3 max-w-2xl text-base-content/70">
             Заполните данные услуги, которую клиент сможет выбрать на странице онлайн-записи.
             Длительность используется при расчете свободных временных слотов.
           </p>
         </div>
-        
+
         <section class="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div class="rounded-2xl bg-base-100 p-6 shadow">
             <.form
@@ -48,33 +48,33 @@ defmodule AutoslotWeb.ServiceLive.Form do
                 >
                   Сохранить услугу
                 </button>
-                
+
                 <a href={return_path(@return_to, @service)} class="btn btn-outline">
                   Отмена
                 </a>
               </div>
             </.form>
           </div>
-          
+
           <aside class="rounded-2xl bg-base-100 p-6 shadow">
             <h2 class="text-xl font-semibold">Как это используется</h2>
-            
+
             <div class="mt-5 grid gap-4 text-sm text-base-content/70">
               <div class="rounded-xl border border-base-300 p-4">
                 <div class="font-semibold text-base-content">Название</div>
-                
+
                 <p class="mt-1">Показывается клиенту в списке доступных услуг.</p>
               </div>
-              
+
               <div class="rounded-xl border border-base-300 p-4">
                 <div class="font-semibold text-base-content">Длительность</div>
-                
+
                 <p class="mt-1">Влияет на расчет свободных слотов для записи.</p>
               </div>
-              
+
               <div class="rounded-xl border border-base-300 p-4">
                 <div class="font-semibold text-base-content">Цена</div>
-                
+
                 <p class="mt-1">Используется как ориентир для клиента до визита в сервис.</p>
               </div>
             </div>
