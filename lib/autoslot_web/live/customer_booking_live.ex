@@ -238,7 +238,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
-
             <h1 class="mt-4 text-4xl font-bold text-base-content">
               Онлайн-запись в автосервис
             </h1>
@@ -282,7 +281,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <%= if @success_message do %>
                 <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
                   {@success_message}
-
                   <div class="mt-3">
                     <a href="/my-bookings" class="btn btn-success btn-sm">
                       Перейти к моим записям
@@ -300,7 +298,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <form phx-change="change_selection" class="mt-6 grid gap-4">
                 <label class="grid gap-2">
                   <span class="font-medium">Услуга</span>
-
                   <select name="service_id" class="select select-bordered w-full">
                     <%= for service <- @services do %>
                       <option
@@ -315,7 +312,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Дата</span>
-
                   <input
                     type="date"
                     name="date"
@@ -323,7 +319,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     min={@today}
                     class="input input-bordered w-full"
                   />
-
                   <span class="text-xs text-base-content/50">
                     Запись доступна с сегодняшней даты.
                   </span>
@@ -332,10 +327,8 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
-
                 <label class="grid gap-2">
                   <span class="font-medium">Свободное время</span>
-
                   <%= if Enum.empty?(@slots) do %>
                     <div class="rounded-lg border border-warning bg-warning/10 p-4">
                       На выбранную дату нет доступных слотов.
@@ -353,7 +346,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Имя клиента</span>
-
                   <input
                     type="text"
                     name="customer_name"
@@ -365,7 +357,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Телефон</span>
-
                   <input
                     type="text"
                     name="phone"
@@ -377,7 +368,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Номер автомобиля</span>
-
                   <input
                     type="text"
                     name="vehicle_plate"
