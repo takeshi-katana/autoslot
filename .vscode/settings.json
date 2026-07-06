@@ -1,0 +1,15 @@
+{
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "editor.formatOnSave": false,
+  "[elixir]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[phoenix-heex]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}
