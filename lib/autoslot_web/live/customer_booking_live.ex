@@ -5,6 +5,41 @@ defmodule AutoslotWeb.CustomerBookingLive do
   alias Autoslot.Scheduling
   alias Autoslot.Services
 
+  @field_labels %{
+    customer_name: "Имя клиента",
+    phone: "Телефон",
+    vehicle_plate: "Номер автомобиля",
+    starts_at: "Время начала",
+    ends_at: "Время окончания",
+    status: "Статус",
+    service_id: "Услуга"
+  }
+
+  @error_messages %{
+    "can't be blank" => "не может быть пустым",
+    "is invalid" => "имеет неверный формат",
+    "has already been taken" => "уже используется",
+    "does not exist" => "не найдена",
+    "must be accepted" => "должно быть принято",
+    "has invalid format" => "имеет неверный формат",
+    "has an invalid entry" => "содержит неверное значение",
+    "is reserved" => "зарезервировано",
+    "does not match confirmation" => "не совпадает с подтверждением",
+    "is still associated with this entry" => "связано с этой записью",
+    "are still associated with this entry" => "связаны с этой записью",
+    "should be at least %{count} character(s)" => "должно содержать минимум %{count} символов",
+    "should be at most %{count} character(s)" => "должно содержать максимум %{count} символов",
+    "should be %{count} character(s)" => "должно содержать %{count} символов",
+    "should have at least %{count} item(s)" => "должно содержать минимум %{count} элемент(ов)",
+    "should have at most %{count} item(s)" => "должно содержать максимум %{count} элемент(ов)",
+    "should have %{count} item(s)" => "должно содержать %{count} элемент(ов)",
+    "must be less than %{number}" => "должно быть меньше %{number}",
+    "must be greater than %{number}" => "должно быть больше %{number}",
+    "must be less than or equal to %{number}" => "должно быть меньше или равно %{number}",
+    "must be greater than or equal to %{number}" => "должно быть больше или равно %{number}",
+    "must be equal to %{number}" => "должно быть равно %{number}"
+  }
+
   @impl true
   def mount(_params, _session, socket) do
     services = Services.list_services()
@@ -168,11 +203,31 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
   defp format_changeset_errors(changeset) do
     changeset
-    |> Ecto.Changeset.traverse_errors(fn {message, _opts} -> message end)
+    |> Ecto.Changeset.traverse_errors(fn {message, opts} ->
+      message
+      |> translate_error_message()
+      |> interpolate_error_message(opts)
+    end)
     |> Enum.flat_map(fn {field, messages} ->
-      Enum.map(messages, fn message -> "#{field}: #{message}" end)
+      Enum.map(messages, fn message ->
+        "#{field_label(field)}: #{message}"
+      end)
     end)
     |> Enum.join(", ")
+  end
+
+  defp translate_error_message(message) do
+    Map.get(@error_messages, message, message)
+  end
+
+  defp interpolate_error_message(message, opts) do
+    Enum.reduce(opts, message, fn {key, value}, acc ->
+      String.replace(acc, "%{#{key}}", to_string(value))
+    end)
+  end
+
+  defp field_label(field) do
+    Map.get(@field_labels, field, field |> Atom.to_string() |> String.replace("_", " "))
   end
 
   @impl true
@@ -183,6 +238,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
+
             <h1 class="mt-4 text-4xl font-bold text-base-content">
               Онлайн-запись в автосервис
             </h1>
@@ -226,6 +282,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <%= if @success_message do %>
                 <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
                   {@success_message}
+
                   <div class="mt-3">
                     <a href="/my-bookings" class="btn btn-success btn-sm">
                       Перейти к моим записям
@@ -243,6 +300,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <form phx-change="change_selection" class="mt-6 grid gap-4">
                 <label class="grid gap-2">
                   <span class="font-medium">Услуга</span>
+
                   <select name="service_id" class="select select-bordered w-full">
                     <%= for service <- @services do %>
                       <option
@@ -257,6 +315,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Дата</span>
+
                   <input
                     type="date"
                     name="date"
@@ -264,6 +323,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     min={@today}
                     class="input input-bordered w-full"
                   />
+
                   <span class="text-xs text-base-content/50">
                     Запись доступна с сегодняшней даты.
                   </span>
@@ -272,8 +332,10 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
+
                 <label class="grid gap-2">
                   <span class="font-medium">Свободное время</span>
+
                   <%= if Enum.empty?(@slots) do %>
                     <div class="rounded-lg border border-warning bg-warning/10 p-4">
                       На выбранную дату нет доступных слотов.
@@ -291,6 +353,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Имя клиента</span>
+
                   <input
                     type="text"
                     name="customer_name"
@@ -302,6 +365,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Телефон</span>
+
                   <input
                     type="text"
                     name="phone"
@@ -313,6 +377,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
                 <label class="grid gap-2">
                   <span class="font-medium">Номер автомобиля</span>
+
                   <input
                     type="text"
                     name="vehicle_plate"
