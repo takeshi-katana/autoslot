@@ -238,26 +238,25 @@ defmodule AutoslotWeb.CustomerBookingLive do
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
-
             <h1 class="mt-4 text-4xl font-bold text-base-content">
               Онлайн-запись в автосервис
             </h1>
-
+            
             <p class="mt-3 max-w-2xl text-base-content/70">
               Выберите услугу, дату и свободное время. После отправки формы запись будет создана
               со статусом ожидания подтверждения.
             </p>
           </div>
-
+          
           <a href="/my-bookings" class="btn btn-outline">
             Мои записи
           </a>
         </div>
-
+        
         <%= if Enum.empty?(@services) do %>
           <div class="rounded-lg border border-warning bg-warning/10 p-6">
             <h2 class="text-xl font-semibold">Услуги пока не добавлены</h2>
-
+            
             <p class="mt-2">
               Сначала добавьте услуги в каталог или запустите seed-данные.
             </p>
@@ -268,21 +267,20 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 class="text-2xl font-semibold">Данные записи</h2>
-
+                  
                   <p class="mt-2 text-sm text-base-content/60">
                     Заполните контактные данные и выберите подходящий слот.
                   </p>
                 </div>
-
+                
                 <a href="/my-bookings" class="btn btn-outline btn-sm">
                   Проверить запись
                 </a>
               </div>
-
+              
               <%= if @success_message do %>
                 <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
                   {@success_message}
-
                   <div class="mt-3">
                     <a href="/my-bookings" class="btn btn-success btn-sm">
                       Перейти к моим записям
@@ -290,17 +288,16 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   </div>
                 </div>
               <% end %>
-
+              
               <%= if @error_message do %>
                 <div class="mt-4 rounded-lg border border-error bg-error/10 p-4 text-error">
                   {@error_message}
                 </div>
               <% end %>
-
+              
               <form phx-change="change_selection" class="mt-6 grid gap-4">
                 <label class="grid gap-2">
                   <span class="font-medium">Услуга</span>
-
                   <select name="service_id" class="select select-bordered w-full">
                     <%= for service <- @services do %>
                       <option
@@ -312,10 +309,9 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     <% end %>
                   </select>
                 </label>
-
+                
                 <label class="grid gap-2">
                   <span class="font-medium">Дата</span>
-
                   <input
                     type="date"
                     name="date"
@@ -323,19 +319,16 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     min={@today}
                     class="input input-bordered w-full"
                   />
-
                   <span class="text-xs text-base-content/50">
                     Запись доступна с сегодняшней даты.
                   </span>
                 </label>
               </form>
-
+              
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
-
                 <label class="grid gap-2">
                   <span class="font-medium">Свободное время</span>
-
                   <%= if Enum.empty?(@slots) do %>
                     <div class="rounded-lg border border-warning bg-warning/10 p-4">
                       На выбранную дату нет доступных слотов.
@@ -350,10 +343,9 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     </select>
                   <% end %>
                 </label>
-
+                
                 <label class="grid gap-2">
                   <span class="font-medium">Имя клиента</span>
-
                   <input
                     type="text"
                     name="customer_name"
@@ -362,10 +354,9 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-
+                
                 <label class="grid gap-2">
                   <span class="font-medium">Телефон</span>
-
                   <input
                     type="text"
                     name="phone"
@@ -374,10 +365,9 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-
+                
                 <label class="grid gap-2">
                   <span class="font-medium">Номер автомобиля</span>
-
                   <input
                     type="text"
                     name="vehicle_plate"
@@ -386,33 +376,33 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-
+                
                 <button type="submit" class="btn btn-primary mt-2" disabled={Enum.empty?(@slots)}>
                   Создать запись
                 </button>
               </form>
             </section>
-
+            
             <aside class="grid gap-6">
               <section class="rounded-xl bg-base-100 p-6 shadow">
                 <h2 class="text-xl font-semibold">Выбранная услуга</h2>
-
+                
                 <%= if @selected_service do %>
                   <div class="mt-4 rounded-xl border border-base-300 p-4">
                     <h3 class="text-2xl font-bold text-base-content">
                       {@selected_service.name}
                     </h3>
-
+                    
                     <div class="mt-3 flex flex-wrap gap-2">
                       <span class="badge badge-primary">
                         {@selected_service.duration_minutes} мин.
                       </span>
-
+                      
                       <span class="badge badge-outline">
                         {@selected_service.price} ₽
                       </span>
                     </div>
-
+                    
                     <p class="mt-4 text-sm leading-6 text-base-content/70">
                       {@selected_service.description}
                     </p>
@@ -423,15 +413,15 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   </p>
                 <% end %>
               </section>
-
+              
               <section class="rounded-xl bg-base-100 p-6 shadow">
                 <h2 class="text-xl font-semibold">Доступные слоты</h2>
-
+                
                 <p class="mt-2 text-sm text-base-content/70">
                   Система показывает только те интервалы, которые не пересекаются с активными
                   записями.
                 </p>
-
+                
                 <div class="mt-5 grid gap-2">
                   <%= for slot <- @slots do %>
                     <div class="rounded-lg border border-base-300 px-4 py-3">
@@ -439,14 +429,14 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     </div>
                   <% end %>
                 </div>
-
+                
                 <div class="mt-6 rounded-xl bg-base-200 p-4 text-sm text-base-content/70">
                   <div class="font-semibold text-base-content">Уже записывались?</div>
-
+                  
                   <p class="mt-1">
                     Найдите свои записи по номеру телефона и проверьте статус заявки.
                   </p>
-
+                  
                   <a href="/my-bookings" class="btn btn-outline btn-sm mt-4">
                     Мои записи
                   </a>
