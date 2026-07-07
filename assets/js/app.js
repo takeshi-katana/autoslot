@@ -19,6 +19,7 @@
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html"
+
 // Establish Phoenix Socket and LiveView configuration.
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
@@ -26,6 +27,7 @@ import {hooks as colocatedHooks} from "phoenix-colocated/autoslot"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
@@ -54,6 +56,7 @@ const initTechBackground = () => {
   let height = 0
   let pixelRatio = 1
   let points = []
+
   let pointer = {
     x: window.innerWidth * 0.5,
     y: window.innerHeight * 0.5,
@@ -67,9 +70,9 @@ const initTechBackground = () => {
     y: randomBetween(-80, height + 80),
     originX: 0,
     originY: 0,
-    vx: randomBetween(-0.12, 0.12),
-    vy: randomBetween(-0.08, 0.08),
-    radius: randomBetween(1.1, 2.4),
+    vx: randomBetween(-0.08, 0.08),
+    vy: randomBetween(-0.06, 0.06),
+    radius: randomBetween(1, 2.1),
     phase: randomBetween(0, Math.PI * 2),
   })
 
@@ -90,7 +93,7 @@ const initTechBackground = () => {
 
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
 
-    const pointCount = Math.min(90, Math.max(44, Math.floor((width * height) / 25000)))
+    const pointCount = Math.min(135, Math.max(72, Math.floor((width * height) / 17000)))
 
     points = Array.from({length: pointCount}, () => {
       const point = createPoint()
@@ -103,7 +106,7 @@ const initTechBackground = () => {
     context.beginPath()
     context.moveTo(from.x, from.y)
     context.lineTo(to.x, to.y)
-    context.strokeStyle = `rgba(148, 163, 184, ${opacity})`
+    context.strokeStyle = `rgba(156, 163, 175, ${opacity})`
     context.lineWidth = lineWidth
     context.stroke()
   }
@@ -114,39 +117,23 @@ const initTechBackground = () => {
     context.lineTo(b.x, b.y)
     context.lineTo(c.x, c.y)
     context.closePath()
-    context.fillStyle = `rgba(99, 102, 241, ${opacity})`
+    context.fillStyle = `rgba(148, 163, 184, ${opacity})`
     context.fill()
   }
 
   const animate = time => {
     context.clearRect(0, 0, width, height)
 
-    const gradient = context.createRadialGradient(
-      pointer.x,
-      pointer.y,
-      0,
-      pointer.x,
-      pointer.y,
-      Math.max(width, height) * 0.45
-    )
-
-    gradient.addColorStop(0, "rgba(99, 102, 241, 0.10)")
-    gradient.addColorStop(0.42, "rgba(99, 102, 241, 0.035)")
-    gradient.addColorStop(1, "rgba(99, 102, 241, 0)")
-
-    context.fillStyle = gradient
-    context.fillRect(0, 0, width, height)
-
     for (const point of points) {
-      const drift = Math.sin(time * 0.0006 + point.phase) * 9
+      const drift = Math.sin(time * 0.00055 + point.phase) * 8
       const pointerDistance = Math.hypot(point.x - pointer.x, point.y - pointer.y)
-      const pointerPower = Math.max(0, 1 - pointerDistance / 260)
+      const pointerPower = pointer.active ? Math.max(0, 1 - pointerDistance / 300) : 0
 
-      point.x += point.vx + (point.x - pointer.x) * pointerPower * 0.004
-      point.y += point.vy + (point.y - pointer.y) * pointerPower * 0.004
+      point.x += point.vx + (point.x - pointer.x) * pointerPower * 0.0042
+      point.y += point.vy + (point.y - pointer.y) * pointerPower * 0.0042
 
-      point.x += (point.originX + drift - point.x) * 0.006
-      point.y += (point.originY - drift * 0.4 - point.y) * 0.006
+      point.x += (point.originX + drift - point.x) * 0.005
+      point.y += (point.originY - drift * 0.35 - point.y) * 0.005
 
       if (point.x < -120 || point.x > width + 120 || point.y < -120 || point.y > height + 120) {
         point.x = randomBetween(-60, width + 60)
@@ -161,34 +148,28 @@ const initTechBackground = () => {
         const second = points[j]
         const distance = Math.hypot(first.x - second.x, first.y - second.y)
 
-        if (distance < 185) {
-          const centerX = (first.x + second.x) / 2
-          const centerY = (first.y + second.y) / 2
-          const pointerDistance = Math.hypot(centerX - pointer.x, centerY - pointer.y)
-          const pointerBoost = Math.max(0, 1 - pointerDistance / 340)
-          const opacity = (1 - distance / 185) * (0.16 + pointerBoost * 0.34)
+        if (distance < 205) {
+          const opacity = (1 - distance / 205) * 0.12
 
-          drawLine(first, second, opacity, 1 + pointerBoost * 0.8)
+          drawLine(first, second, opacity, 0.8)
         }
       }
     }
 
-    for (let i = 0; i < points.length - 2; i += 8) {
-      const opacity = 0.018 + Math.sin(time * 0.0007 + i) * 0.012
+    for (let i = 0; i < points.length - 2; i += 7) {
+      const opacity = 0.018 + Math.sin(time * 0.0006 + i) * 0.01
 
-      if (opacity > 0.012) {
+      if (opacity > 0.014) {
         drawTriangle(points[i], points[i + 1], points[i + 2], opacity)
       }
     }
 
     for (const point of points) {
-      const pointerDistance = Math.hypot(point.x - pointer.x, point.y - pointer.y)
-      const pointerBoost = Math.max(0, 1 - pointerDistance / 260)
-      const pulse = 0.42 + Math.sin(time * 0.0015 + point.phase) * 0.28
+      const pulse = 0.42 + Math.sin(time * 0.0014 + point.phase) * 0.22
 
       context.beginPath()
-      context.arc(point.x, point.y, point.radius + pointerBoost * 1.3, 0, Math.PI * 2)
-      context.fillStyle = `rgba(226, 232, 240, ${0.16 + pulse * 0.16 + pointerBoost * 0.35})`
+      context.arc(point.x, point.y, point.radius, 0, Math.PI * 2)
+      context.fillStyle = `rgba(226, 232, 240, ${0.12 + pulse * 0.1})`
       context.fill()
     }
 
@@ -197,16 +178,20 @@ const initTechBackground = () => {
     }
   }
 
-  window.addEventListener("pointermove", event => {
-    pointer = {
-      x: event.clientX,
-      y: event.clientY,
-      active: true,
-    }
+  window.addEventListener(
+    "pointermove",
+    event => {
+      pointer = {
+        x: event.clientX,
+        y: event.clientY,
+        active: true,
+      }
 
-    root.style.setProperty("--cursor-x", `${event.clientX}px`)
-    root.style.setProperty("--cursor-y", `${event.clientY}px`)
-  }, {passive: true})
+      root.style.setProperty("--cursor-x", `${event.clientX}px`)
+      root.style.setProperty("--cursor-y", `${event.clientY}px`)
+    },
+    {passive: true}
+  )
 
   window.addEventListener("pointerleave", () => {
     pointer.active = false
@@ -248,19 +233,25 @@ if (process.env.NODE_ENV === "development") {
     //   * click with "c" key pressed to open at caller location
     //   * click with "d" key pressed to open at function component definition location
     let keyDown
+
     window.addEventListener("keydown", e => keyDown = e.key)
     window.addEventListener("keyup", _e => keyDown = null)
-    window.addEventListener("click", e => {
-      if(keyDown === "c"){
-        e.preventDefault()
-        e.stopImmediatePropagation()
-        reloader.openEditorAtCaller(e.target)
-      } else if(keyDown === "d"){
-        e.preventDefault()
-        e.stopImmediatePropagation()
-        reloader.openEditorAtDef(e.target)
-      }
-    }, true)
+
+    window.addEventListener(
+      "click",
+      e => {
+        if (keyDown === "c") {
+          e.preventDefault()
+          e.stopImmediatePropagation()
+          reloader.openEditorAtCaller(e.target)
+        } else if (keyDown === "d") {
+          e.preventDefault()
+          e.stopImmediatePropagation()
+          reloader.openEditorAtDef(e.target)
+        }
+      },
+      true
+    )
 
     window.liveReloader = reloader
   })

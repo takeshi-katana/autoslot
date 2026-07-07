@@ -219,16 +219,7 @@ body {
 }
 
 .tech-background__spotlight {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      circle at var(--cursor-x) var(--cursor-y),
-      rgba(255, 255, 255, 0.006),
-      rgba(255, 255, 255, 0.004) 6rem,
-      transparent 14rem
-    );
-  mix-blend-mode: screen;
+  display: none;
 }
 
 .tech-background__vignette {

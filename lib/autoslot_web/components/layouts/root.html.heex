@@ -13,7 +13,7 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-
+    
     <script>
       (() => {
         const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -46,15 +46,15 @@
       })();
     </script>
   </head>
-
+  
   <body>
     <div id="tech-background" class="tech-background" aria-hidden="true">
       <canvas id="tech-background-canvas" class="tech-background__canvas"></canvas>
       <div class="tech-background__vignette"></div>
-
+      
       <div class="tech-background__spotlight"></div>
     </div>
-
+    
     <div class="app-content relative z-10 min-h-screen">
       {@inner_content}
     </div>
