@@ -3,16 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="csrf-token" content={get_csrf_token()} />
-
-    <.live_title default="Autoslot" suffix=" · Phoenix Framework" phx-no-format>
+    <meta name="csrf-token" content={get_csrf_token()} /> <.live_title
+      default="Autoslot"
+      suffix=" · Phoenix Framework"
+      phx-no-format
+    >
       {assigns[:page_title]}
     </.live_title>
-
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-
+    
     <script>
       (() => {
         const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -45,14 +46,15 @@
       })();
     </script>
   </head>
-
+  
   <body>
     <div id="tech-background" class="tech-background" aria-hidden="true">
       <canvas id="tech-background-canvas" class="tech-background__canvas"></canvas>
       <div class="tech-background__vignette"></div>
+      
       <div class="tech-background__spotlight"></div>
     </div>
-
+    
     <div class="app-content relative z-10 min-h-screen">
       {@inner_content}
     </div>

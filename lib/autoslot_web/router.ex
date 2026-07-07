@@ -10,6 +10,10 @@ defmodule AutoslotWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :require_admin do
+    plug AutoslotWeb.AdminAuth, :require_admin
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -21,12 +25,22 @@ defmodule AutoslotWeb.Router do
 
     live "/book", CustomerBookingLive
     live "/my-bookings", CustomerBookingLookupLive
-    live "/admin/bookings", AdminBookingLive
+
+    get "/admin/login", AdminSessionController, :new
+    post "/admin/login", AdminSessionController, :create
+    delete "/admin/logout", AdminSessionController, :delete
+    get "/admin/logout", AdminSessionController, :delete
 
     live "/services", ServiceLive.Index, :index
     live "/services/new", ServiceLive.Form, :new
     live "/services/:id/edit", ServiceLive.Form, :edit
     live "/services/:id", ServiceLive.Show, :show
+  end
+
+  scope "/", AutoslotWeb do
+    pipe_through [:browser, :require_admin]
+
+    live "/admin/bookings", AdminBookingLive
   end
 
   if Application.compile_env(:autoslot, :dev_routes) do
