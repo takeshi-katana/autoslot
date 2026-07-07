@@ -343,9 +343,18 @@ defmodule AutoslotWeb.AdminBookingLive do
             </p>
           </div>
 
-          <div class="flex gap-3">
-            <a href="/book" class="btn btn-outline">Страница клиента</a>
-            <a href="/services" class="btn btn-outline">Каталог услуг</a>
+          <div class="flex flex-wrap gap-3">
+            <a href="/book" class="btn btn-outline">
+              Страница клиента
+            </a>
+
+            <a href="/services" class="btn btn-outline">
+              Каталог услуг
+            </a>
+
+            <a href="/admin/logout" class="btn btn-error">
+              Выйти
+            </a>
           </div>
         </div>
 
