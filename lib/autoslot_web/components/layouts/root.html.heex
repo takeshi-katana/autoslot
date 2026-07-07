@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="csrf-token" content={get_csrf_token()} /> <.live_title
-      default="Autoslot"
-      suffix=" · Phoenix Framework"
-      phx-no-format
-    >{assigns[:page_title]}</.live_title>
+    <meta name="csrf-token" content={get_csrf_token()} />
+
+    <.live_title default="Autoslot" suffix=" · Phoenix Framework" phx-no-format>
+      {assigns[:page_title]}
+    </.live_title>
+
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
@@ -27,14 +28,16 @@
             document.documentElement.setAttribute("data-theme-source", "user");
           }
         };
+
         if (!document.documentElement.hasAttribute("data-theme")) {
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
+
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
 
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
 
-        matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+        matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_e) => {
           if (document.documentElement.getAttribute("data-theme-source") === "system") {
             document.documentElement.setAttribute("data-theme", systemTheme());
           }
@@ -44,6 +47,14 @@
   </head>
 
   <body>
-    {@inner_content}
+    <div id="tech-background" class="tech-background" aria-hidden="true">
+      <canvas id="tech-background-canvas" class="tech-background__canvas"></canvas>
+      <div class="tech-background__vignette"></div>
+      <div class="tech-background__spotlight"></div>
+    </div>
+
+    <div class="app-content relative z-10 min-h-screen">
+      {@inner_content}
+    </div>
   </body>
 </html>

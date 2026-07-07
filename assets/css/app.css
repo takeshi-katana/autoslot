@@ -99,10 +99,142 @@
 @custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
 @custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
 
-/* Use the data attribute for dark mode  */
+/* Use the data attribute for dark mode */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /* Make LiveView wrapper divs transparent for layout */
-[data-phx-session], [data-phx-teleported-src] { display: contents }
+[data-phx-session],
+[data-phx-teleported-src] {
+  display: contents;
+}
 
 /* This file is for your main application CSS */
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  background: #101513;
+}
+
+.app-content > main {
+  position: relative;
+  isolation: isolate;
+  background: transparent !important;
+}
+
+.app-content > main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.72;
+  background-image:
+    radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.075), transparent 22rem),
+    radial-gradient(circle at 78% 20%, rgba(255, 255, 255, 0.055), transparent 26rem),
+    url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%201800%20950%22%20preserveAspectRatio=%22none%22%3E%0A%20%20%3Cg%20fill=%22none%22%20stroke=%22#94a3b8%22%20stroke-width=%221.15%22%20opacity=%22.34%22%3E%0A%20%20%20%20%3Cpath%20d=%22M40%20760%20L180%20640%20L320%20690%20L480%20560%20L650%20620%20L820%20510%20L1040%20570%20L1220%20430%20L1430%20500%20L1690%20350%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M110%20280%20L260%20170%20L430%20250%20L610%20120%20L760%20230%20L930%20160%20L1140%20260%20L1310%20110%20L1530%20210%20L1760%2090%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M230%20910%20L390%20790%20L540%20860%20L710%20720%20L910%20780%20L1090%20660%20L1280%20740%20L1480%20610%20L1710%20700%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M80%20470%20L260%20420%20L380%20520%20L560%20390%20L760%20450%20L910%20350%20L1100%20410%20L1320%20310%20L1510%20390%20L1740%20270%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M350%2080%20L420%20250%20L390%20520%20L480%20560%20L540%20860%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M760%20230%20L760%20450%20L710%20720%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M1140%20260%20L1100%20410%20L1040%20570%20L1090%20660%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M1530%20210%20L1510%20390%20L1430%20500%20L1480%20610%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Cg%20fill=%22#cbd5e1%22%20opacity=%22.32%22%3E%0A%20%20%20%20%3Ccircle%20cx=%2240%22%20cy=%22760%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22180%22%20cy=%22640%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22320%22%20cy=%22690%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22480%22%20cy=%22560%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22650%22%20cy=%22620%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22820%22%20cy=%22510%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221040%22%20cy=%22570%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221220%22%20cy=%22430%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221430%22%20cy=%22500%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221690%22%20cy=%22350%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22110%22%20cy=%22280%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22260%22%20cy=%22170%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22430%22%20cy=%22250%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22610%22%20cy=%22120%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22760%22%20cy=%22230%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22930%22%20cy=%22160%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221140%22%20cy=%22260%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221310%22%20cy=%22110%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221530%22%20cy=%22210%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221760%22%20cy=%2290%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22230%22%20cy=%22910%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22390%22%20cy=%22790%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22540%22%20cy=%22860%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22710%22%20cy=%22720%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%22910%22%20cy=%22780%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221090%22%20cy=%22660%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221280%22%20cy=%22740%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221480%22%20cy=%22610%22%20r=%223%22/%3E%0A%20%20%20%20%3Ccircle%20cx=%221710%22%20cy=%22700%22%20r=%223%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Cg%20fill=%22#64748b%22%20opacity=%22.045%22%3E%0A%20%20%20%20%3Cpath%20d=%22M180%20640%20L320%20690%20L480%20560%20L260%20420%20Z%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M760%20230%20L930%20160%20L1140%20260%20L910%20350%20Z%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M1220%20430%20L1430%20500%20L1510%20390%20L1320%20310%20Z%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M390%20790%20L540%20860%20L710%20720%20L480%20560%20Z%22/%3E%0A%20%20%20%20%3Cpath%20d=%22M1090%20660%20L1280%20740%20L1480%20610%20L1430%20500%20Z%22/%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E");
+  background-size:
+    auto,
+    auto,
+    100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+}
+
+.app-content > main > * {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+  Make application cards glass-like enough for the network background to be visible.
+*/
+.app-content main .bg-base-100 {
+  background-color: rgba(36, 43, 51, 0.72) !important;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.app-content main .bg-base-200 {
+  background-color: rgba(24, 30, 36, 0.48) !important;
+  backdrop-filter: blur(10px);
+}
+
+.app-content main .bg-base-300 {
+  background-color: rgba(14, 18, 22, 0.66) !important;
+}
+
+.app-content main .border-base-300 {
+  border-color: rgba(148, 163, 184, 0.24) !important;
+}
+
+.tech-background {
+  --cursor-x: 50vw;
+  --cursor-y: 50vh;
+
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 22%, rgba(255, 255, 255, 0.06), transparent 23rem),
+    radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.045), transparent 26rem),
+    radial-gradient(circle at 52% 68%, rgba(99, 102, 241, 0.055), transparent 28rem),
+    linear-gradient(135deg, #151b19, #101513 48%, #181f1b);
+}
+
+.tech-background::before,
+.tech-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 92px 92px;
+  mask-image: radial-gradient(circle at 50% 45%, black, transparent 78%);
+}
+
+.tech-background::after {
+  opacity: 0.12;
+  background-size: 46px 46px;
+  transform: translate3d(18px, 18px, 0);
+}
+
+.tech-background__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+}
+
+.tech-background__spotlight {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at var(--cursor-x) var(--cursor-y),
+      rgba(255, 255, 255, 0.006),
+      rgba(255, 255, 255, 0.004) 6rem,
+      transparent 14rem
+    );
+  mix-blend-mode: screen;
+}
+
+.tech-background__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 45%, transparent 0%, rgba(0, 0, 0, 0.035) 52%, rgba(0, 0, 0, 0.25) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.22));
+}
