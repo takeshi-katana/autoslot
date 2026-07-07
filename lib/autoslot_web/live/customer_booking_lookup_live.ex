@@ -20,12 +20,12 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <main class="min-h-screen bg-base-200 px-6 py-10">
+    <main class="min-h-screen bg-transparent px-6 py-10">
       <div class="mx-auto max-w-6xl">
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
-            <h1 class="mt-4 text-4xl font-bold text-base-content">
+            <h1 class="mt-4 text-4xl font-semibold text-base-content">
               Мои записи
             </h1>
 
@@ -41,7 +41,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
         </div>
 
         <section class="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <aside class="rounded-2xl bg-base-100 p-6 shadow">
+          <aside class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
             <h2 class="text-xl font-semibold">Поиск по телефону</h2>
 
             <.form for={@form} id="booking-lookup-form" phx-submit="search" class="mt-5 grid gap-4">
@@ -56,7 +56,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
               </button>
             </.form>
 
-            <div class="mt-6 rounded-xl bg-base-200 p-4 text-sm text-base-content/70">
+            <div class="mt-6 rounded-2xl border border-white/10 bg-base-200/70 p-4 text-sm text-base-content/70">
               <div class="font-semibold text-base-content">Пример</div>
 
               <p class="mt-1">
@@ -66,7 +66,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
             </div>
           </aside>
 
-          <section class="rounded-2xl bg-base-100 p-6 shadow">
+          <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
             <%= if @notice do %>
               <div class="alert alert-success mb-5">
                 {@notice}
@@ -81,7 +81,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
 
             <%= cond do %>
               <% not @searched? -> %>
-                <div class="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-base-300 p-8 text-center">
+                <div class="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-base-200/40 p-8 text-center">
                   <div>
                     <h2 class="text-2xl font-semibold">Введите телефон</h2>
 
@@ -92,7 +92,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
                   </div>
                 </div>
               <% Enum.empty?(@bookings) -> %>
-                <div class="flex min-h-72 items-center justify-center rounded-xl border border-dashed border-base-300 p-8 text-center">
+                <div class="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-base-200/40 p-8 text-center">
                   <div>
                     <h2 class="text-2xl font-semibold">Записи не найдены</h2>
 
@@ -122,7 +122,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
 
                 <div class="grid gap-4">
                   <%= for booking <- @bookings do %>
-                    <article class="rounded-xl border border-base-300 p-5">
+                    <article class="rounded-2xl border border-white/10 bg-base-200/50 p-5">
                       <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                           <div class="flex flex-wrap items-center gap-2">
@@ -180,7 +180,7 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
 
         <%= if @booking_to_cancel do %>
           <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
-            <div class="w-full max-w-lg rounded-2xl bg-base-100 p-6 shadow-2xl">
+            <div class="w-full max-w-lg rounded-3xl border border-white/10 bg-base-100 p-6 shadow-2xl">
               <h2 class="text-2xl font-semibold">Отменить запись?</h2>
 
               <p class="mt-3 text-base-content/70">

@@ -287,11 +287,11 @@ defmodule AutoslotWeb.CustomerBookingLive do
   end
 
   defp slot_button_class(%{available: false}, _selected_slot) do
-    "rounded-xl border border-base-300 bg-base-300/40 px-4 py-3 text-left text-base-content/35 cursor-not-allowed"
+    "rounded-xl border border-base-300 bg-base-300/40 px-4 py-1 text-left text-base-content/35 cursor-not-allowed"
   end
 
   defp slot_button_class(slot, selected_slot) do
-    base = "rounded-xl border px-4 py-3 text-left transition hover:-translate-y-0.5"
+    base = "rounded-xl border px-4 py-1 text-left transition hover:-translate-y-0.5"
 
     if selected_slot == slot_value(slot) do
       "#{base} border-primary bg-primary text-primary-content shadow"
@@ -309,12 +309,12 @@ defmodule AutoslotWeb.CustomerBookingLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <main class="min-h-screen bg-base-200 px-6 py-10">
+    <main class="min-h-screen bg-transparent px-6 py-10">
       <div class="mx-auto max-w-5xl">
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
-            <h1 class="mt-4 text-4xl font-bold text-base-content">
+            <h1 class="mt-4 text-4xl font-semibold text-base-content">
               Онлайн-запись в автосервис
             </h1>
 
@@ -339,7 +339,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
           </div>
         <% else %>
           <div class="grid gap-6 lg:grid-cols-[1fr_390px]">
-            <section class="rounded-xl bg-base-100 p-6 shadow">
+            <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
               <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 class="text-2xl font-semibold">Данные записи</h2>
@@ -404,7 +404,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
                 <input type="hidden" name="slot" value={@selected_slot} />
-                <div class="rounded-xl border border-base-300 bg-base-200 p-4">
+                <div class="rounded-2xl border border-white/10 bg-base-200/70 p-4">
                   <div class="text-sm text-base-content/60">Выбранное время</div>
 
                   <div class="mt-1 text-lg font-semibold">
@@ -452,15 +452,28 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 <button type="submit" class="btn btn-primary mt-2" disabled={is_nil(@selected_slot)}>
                   Создать запись
                 </button>
+                <div class="mt-10 flex justify-center">
+                  <div class="relative w-full max-w-[420px]">
+                    <div class="absolute inset-0 rounded-[3rem] bg-primary/5 blur-3xl"></div>
+
+                    <img
+                      src={~p"/images/booking-illustration.svg"}
+                      alt="Иллюстрация автосервиса"
+                      class="relative mx-auto w-full max-w-[480px] select-none opacity-65"
+                      style="filter: hue-rotate(230deg) saturate(0.55) brightness(0.72) contrast(1.25);"
+                      draggable="false"
+                    />
+                  </div>
+                </div>
               </form>
             </section>
 
             <aside class="grid gap-6">
-              <section class="rounded-xl bg-base-100 p-6 shadow">
+              <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
                 <h2 class="text-xl font-semibold">Выбранная услуга</h2>
 
                 <%= if @selected_service do %>
-                  <div class="mt-4 rounded-xl border border-base-300 p-4">
+                  <div class="mt-4 rounded-2xl border border-white/10 bg-base-200/50 p-4">
                     <h3 class="text-2xl font-bold text-base-content">
                       {@selected_service.name}
                     </h3>
@@ -486,7 +499,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 <% end %>
               </section>
 
-              <section class="rounded-xl bg-base-100 p-6 shadow">
+              <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
                 <div class="flex items-start justify-between gap-4">
                   <div>
                     <h2 class="text-xl font-semibold">Доступные слоты</h2>
@@ -498,7 +511,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 </div>
 
                 <div class="mt-4 flex flex-wrap gap-2 text-xs">
-                  <span class="rounded-full bg-base-100 px-3 py-1 text-base-content">
+                  <span class="rounded-full bg-base-100/70 px-3 py-1 text-base-content">
                     Свободно
                   </span>
 
@@ -527,7 +540,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   <% end %>
                 </div>
 
-                <div class="mt-6 rounded-xl bg-base-200 p-4 text-sm text-base-content/70">
+                <div class="mt-6 rounded-2xl border border-white/10 bg-base-200/70 p-4 text-sm text-base-content/70">
                   <div class="font-semibold text-base-content">Уже записывались?</div>
 
                   <p class="mt-1">

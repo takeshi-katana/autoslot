@@ -6,12 +6,12 @@ defmodule AutoslotWeb.ServiceLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <main class="min-h-screen bg-base-200 px-6 py-10">
+    <main class="min-h-screen bg-transparent px-6 py-10">
       <div class="mx-auto max-w-7xl">
         <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
-            <h1 class="mt-4 text-4xl font-bold text-base-content">
+            <h1 class="mt-4 text-4xl font-semibold text-base-content">
               Каталог услуг
             </h1>
 
@@ -30,7 +30,7 @@ defmodule AutoslotWeb.ServiceLive.Index do
         </div>
 
         <%= if @service_count == 0 do %>
-          <section class="rounded-xl bg-base-100 p-10 text-center shadow">
+          <section class="rounded-3xl border border-white/10 bg-base-100/80 p-10 text-center shadow-2xl backdrop-blur-xl">
             <h2 class="text-2xl font-semibold">Услуги пока не добавлены</h2>
 
             <p class="mt-3 text-base-content/60">
@@ -46,11 +46,11 @@ defmodule AutoslotWeb.ServiceLive.Index do
             <%= for {id, service} <- @streams.services do %>
               <article
                 id={id}
-                class="flex min-h-72 flex-col rounded-2xl bg-base-100 p-6 shadow transition hover:-translate-y-1 hover:shadow-xl"
+                class="flex min-h-72 flex-col rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-xl backdrop-blur-xl transition hover:-translate-y-1 hover:bg-base-100/90 hover:shadow-2xl"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div>
-                    <h2 class="text-2xl font-bold text-base-content">
+                    <h2 class="text-2xl font-semibold text-base-content">
                       {service.name}
                     </h2>
 
