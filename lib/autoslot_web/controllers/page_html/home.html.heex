@@ -1,158 +1,264 @@
-<main class="min-h-screen bg-base-200 px-6 py-10">
+<main class="min-h-screen bg-transparent px-4 py-6 text-base-content sm:px-6 lg:px-8">
   <div class="mx-auto max-w-7xl">
-    <section class="grid min-h-[70vh] items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+    <header class="rounded-[2rem] border border-white/10 bg-base-100/80 shadow-2xl backdrop-blur-xl">
+      <div class="flex flex-col gap-5 px-5 py-4 md:flex-row md:items-center md:justify-between">
+        <a href="/" class="flex items-center gap-4">
+          <span class="flex size-14 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-base-200/80 shadow">
+            <img
+              src={~p"/images/kagami-auto-logo.svg"}
+              alt="KagamiAuto logo"
+              class="h-10 w-10 object-contain"
+            />
+          </span>
+
+          <span>
+            <span class="block text-xl font-black tracking-tight">KagamiAuto</span>
+            <span class="mt-1 block text-sm text-base-content/55">
+              Онлайн-запись для автосервиса
+            </span>
+          </span>
+        </a>
+
+        <nav class="flex flex-wrap items-center gap-2">
+          <a href="/services" class="btn btn-ghost btn-sm">
+            Услуги
+          </a>
+
+          <a href="/my-bookings" class="btn btn-ghost btn-sm">
+            Мои записи
+          </a>
+
+          <a href="/admin/bookings" class="btn btn-ghost btn-sm">
+            Админка
+          </a>
+
+          <a href="/book" class="btn btn-primary btn-sm">
+            Записаться
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="grid min-h-[72vh] items-center gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
       <div>
-        <div class="badge badge-primary badge-lg">
-          Phoenix LiveView MVP
+        <div class="inline-flex items-center gap-3 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary shadow-sm backdrop-blur">
+          <span class="size-2 rounded-full bg-primary shadow-[0_0_20px_currentColor]"></span>
+          Phoenix LiveView MVP для портфолио
         </div>
 
-        <h1 class="mt-6 max-w-4xl text-5xl font-bold tracking-tight text-base-content lg:text-6xl">
-          AutoSlot — онлайн-запись в автосервис
+        <h1 class="mt-7 max-w-4xl text-5xl font-black leading-[0.95] tracking-tight text-base-content md:text-6xl xl:text-7xl">
+          Запись в автосервис без звонков, хаоса и двойных броней
         </h1>
 
-        <p class="mt-6 max-w-2xl text-lg leading-8 text-base-content/70">
-          MVP-система для записи клиентов на услуги автосервиса. Клиент выбирает услугу,
-          дату и свободный слот, а сотрудник управляет заявками через административную панель.
+        <p class="mt-7 max-w-2xl text-lg leading-8 text-base-content/70">
+          KagamiAuto помогает клиенту выбрать услугу, дату и свободное время, а администратору —
+          управлять заявками, статусами и расписанием в одной панели.
         </p>
 
-        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div class="mt-9 flex flex-col gap-3 sm:flex-row">
           <a href="/book" class="btn btn-primary btn-lg">
-            Записаться на услугу
+            Создать запись
           </a>
 
-          <a href="/my-bookings" class="btn btn-outline btn-lg">
-            Мои записи
-          </a>
-
-          <a href="/admin/bookings" class="btn btn-outline btn-lg">
-            Открыть админку
+          <a href="/services" class="btn btn-outline btn-lg">
+            Смотреть услуги
           </a>
         </div>
 
-        <div class="mt-8 grid gap-4 sm:grid-cols-3">
-          <div class="rounded-xl bg-base-100 p-4 shadow">
-            <div class="text-2xl font-bold">LiveView</div>
-
-            <div class="mt-1 text-sm text-base-content/60">
-              Интерфейс без отдельного frontend-фреймворка
-            </div>
+        <dl class="mt-10 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-3xl border border-white/10 bg-base-100/75 p-5 shadow-xl backdrop-blur">
+            <dt class="text-sm text-base-content/55">Рабочий день</dt>
+            <dd class="mt-2 text-3xl font-black">09–18</dd>
           </div>
 
-          <div class="rounded-xl bg-base-100 p-4 shadow">
-            <div class="text-2xl font-bold">PostgreSQL</div>
-
-            <div class="mt-1 text-sm text-base-content/60">
-              Хранение услуг, записей и статусов
-            </div>
+          <div class="rounded-3xl border border-white/10 bg-base-100/75 p-5 shadow-xl backdrop-blur">
+            <dt class="text-sm text-base-content/55">Шаг записи</dt>
+            <dd class="mt-2 text-3xl font-black">30 мин</dd>
           </div>
 
-          <div class="rounded-xl bg-base-100 p-4 shadow">
-            <div class="text-2xl font-bold">ExUnit</div>
-
-            <div class="mt-1 text-sm text-base-content/60">
-              Тесты бизнес-логики записи
-            </div>
+          <div class="rounded-3xl border border-white/10 bg-base-100/75 p-5 shadow-xl backdrop-blur">
+            <dt class="text-sm text-base-content/55">Статусы</dt>
+            <dd class="mt-2 text-3xl font-black">3</dd>
           </div>
-        </div>
+        </dl>
       </div>
 
-      <div class="rounded-2xl bg-base-100 p-6 shadow-xl">
-        <h2 class="text-2xl font-semibold">Что уже реализовано</h2>
+      <aside class="relative">
+        <div class="absolute -inset-6 rounded-[3rem] bg-primary/10 blur-3xl"></div>
 
-        <div class="mt-6 grid gap-4">
-          <div class="rounded-xl border border-base-300 p-4">
-            <h3 class="font-semibold">Каталог услуг</h3>
+        <section class="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-base-100/85 p-6 shadow-2xl backdrop-blur-xl">
+          <div class="flex items-start justify-between gap-5">
+            <div>
+              <p class="text-sm font-bold uppercase tracking-[0.22em] text-primary">
+                Dashboard
+              </p>
 
-            <p class="mt-1 text-sm text-base-content/60">
-              Услуги автосервиса с описанием, длительностью и ценой.
-            </p>
+              <h2 class="mt-2 text-2xl font-black tracking-tight">Расписание на сегодня</h2>
+            </div>
+
+            <span class="badge badge-success badge-lg">Online</span>
           </div>
 
-          <div class="rounded-xl border border-base-300 p-4">
-            <h3 class="font-semibold">Расчет свободных слотов</h3>
+          <div class="mt-7 grid gap-3">
+            <article class="rounded-3xl border border-base-300/70 bg-base-200/65 p-4">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <h3 class="font-bold">Компьютерная диагностика</h3>
+                  <p class="mt-1 text-sm text-base-content/55">
+                    Toyota Camry · A123BC125
+                  </p>
+                </div>
 
-            <p class="mt-1 text-sm text-base-content/60">
-              Система учитывает длительность услуги и уже занятые интервалы.
-            </p>
+                <span class="rounded-2xl bg-warning/15 px-3 py-2 text-sm font-bold text-warning">
+                  09:00
+                </span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl border border-primary/40 bg-primary/10 p-4 shadow">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <h3 class="font-bold">Замена масла</h3>
+                  <p class="mt-1 text-sm text-base-content/55">
+                    Hyundai Solaris · pending
+                  </p>
+                </div>
+
+                <span class="rounded-2xl bg-primary px-3 py-2 text-sm font-bold text-primary-content">
+                  11:30
+                </span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl border border-base-300/70 bg-base-200/65 p-4">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <h3 class="font-bold">Диагностика подвески</h3>
+                  <p class="mt-1 text-sm text-base-content/55">
+                    Mazda CX-5 · confirmed
+                  </p>
+                </div>
+
+                <span class="rounded-2xl bg-success/15 px-3 py-2 text-sm font-bold text-success">
+                  15:00
+                </span>
+              </div>
+            </article>
           </div>
 
-          <div class="rounded-xl border border-base-300 p-4">
-            <h3 class="font-semibold">Просмотр своих записей</h3>
+          <div class="mt-6 grid grid-cols-3 gap-3">
+            <div class="rounded-3xl bg-base-200/75 p-4 text-center">
+              <div class="text-3xl font-black">12</div>
+              <div class="mt-1 text-xs text-base-content/55">слотов</div>
+            </div>
 
-            <p class="mt-1 text-sm text-base-content/60">
-              Клиент может найти свои записи по номеру телефона и отменить активную запись.
-            </p>
+            <div class="rounded-3xl bg-base-200/75 p-4 text-center">
+              <div class="text-3xl font-black">4</div>
+              <div class="mt-1 text-xs text-base-content/55">занято</div>
+            </div>
+
+            <div class="rounded-3xl bg-base-200/75 p-4 text-center">
+              <div class="text-3xl font-black">8</div>
+              <div class="mt-1 text-xs text-base-content/55">свободно</div>
+            </div>
           </div>
+        </section>
+      </aside>
+    </section>
 
-          <div class="rounded-xl border border-base-300 p-4">
-            <h3 class="font-semibold">Административная панель</h3>
-
-            <p class="mt-1 text-sm text-base-content/60">
-              Фильтры, поиск, сводка по статусам, подтверждение и отмена записей.
-            </p>
-          </div>
+    <section class="grid gap-5 lg:grid-cols-3">
+      <article class="rounded-[2rem] border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
+        <div class="flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-xl font-black text-primary">
+          1
         </div>
 
-        <div class="mt-6 flex flex-wrap gap-3">
-          <a href="/services" class="btn btn-outline">
-            Каталог услуг
-          </a>
+        <h2 class="mt-5 text-xl font-black">Клиент выбирает услугу</h2>
 
+        <p class="mt-3 leading-7 text-base-content/65">
+          На странице записи клиент выбирает услугу, дату, свободный слот и вводит данные автомобиля.
+        </p>
+      </article>
+
+      <article class="rounded-[2rem] border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
+        <div class="flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-xl font-black text-primary">
+          2
+        </div>
+
+        <h2 class="mt-5 text-xl font-black">Система контролирует слоты</h2>
+
+        <p class="mt-3 leading-7 text-base-content/65">
+          Активные записи блокируют время, а отменённые больше не мешают новым бронированиям.
+        </p>
+      </article>
+
+      <article class="rounded-[2rem] border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
+        <div class="flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-xl font-black text-primary">
+          3
+        </div>
+
+        <h2 class="mt-5 text-xl font-black">Админ управляет расписанием</h2>
+
+        <p class="mt-3 leading-7 text-base-content/65">
+          В панели есть поиск, фильтры, сводные карточки, подтверждение и отмена заявок.
+        </p>
+      </article>
+    </section>
+
+    <section class="mt-8 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+      <article class="rounded-[2rem] border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
+        <h2 class="text-2xl font-black tracking-tight">Что уже реализовано</h2>
+
+        <div class="mt-6 grid gap-3">
+          <div class="flex items-center gap-3 rounded-2xl bg-base-200/70 p-4">
+            <span class="size-2 rounded-full bg-success"></span>
+            <span>Каталог услуг с ценой, описанием и длительностью</span>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-2xl bg-base-200/70 p-4">
+            <span class="size-2 rounded-full bg-success"></span>
+            <span>Расчёт свободных слотов и защита от пересечений</span>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-2xl bg-base-200/70 p-4">
+            <span class="size-2 rounded-full bg-success"></span>
+            <span>Клиентский поиск записей по номеру телефона</span>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-2xl bg-base-200/70 p-4">
+            <span class="size-2 rounded-full bg-success"></span>
+            <span>Защищённая административная панель</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-[2rem] border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
+        <h2 class="text-2xl font-black tracking-tight">Технологический стек</h2>
+
+        <p class="mt-3 max-w-2xl leading-7 text-base-content/65">
+          KagamiAuto собран как portfolio case study: отдельные feature-ветки, Pull Request,
+          тесты, CI и постепенное развитие продукта.
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <span class="badge badge-lg">Elixir</span>
+          <span class="badge badge-lg">Phoenix</span>
+          <span class="badge badge-lg">LiveView</span>
+          <span class="badge badge-lg">Ecto</span>
+          <span class="badge badge-lg">PostgreSQL</span>
+          <span class="badge badge-lg">ExUnit</span>
+          <span class="badge badge-lg">GitHub Actions</span>
+        </div>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
           <a href="/my-bookings" class="btn btn-outline">
-            Мои записи
+            Проверить запись
           </a>
 
           <a href="/admin/bookings" class="btn btn-primary">
-            Управление записями
+            Открыть админку
           </a>
         </div>
-      </div>
-    </section>
-
-    <section class="mt-12 rounded-2xl bg-base-100 p-6 shadow">
-      <h2 class="text-2xl font-semibold">Пользовательский сценарий</h2>
-
-      <div class="mt-6 grid gap-4 md:grid-cols-4">
-        <div class="rounded-xl bg-base-200 p-4">
-          <div class="text-sm font-semibold text-primary">Шаг 1</div>
-
-          <div class="mt-2 font-medium">Выбор услуги</div>
-
-          <p class="mt-1 text-sm text-base-content/60">
-            Клиент выбирает нужную услугу из каталога.
-          </p>
-        </div>
-
-        <div class="rounded-xl bg-base-200 p-4">
-          <div class="text-sm font-semibold text-primary">Шаг 2</div>
-
-          <div class="mt-2 font-medium">Выбор даты и времени</div>
-
-          <p class="mt-1 text-sm text-base-content/60">
-            Система показывает только доступные слоты.
-          </p>
-        </div>
-
-        <div class="rounded-xl bg-base-200 p-4">
-          <div class="text-sm font-semibold text-primary">Шаг 3</div>
-
-          <div class="mt-2 font-medium">Создание записи</div>
-
-          <p class="mt-1 text-sm text-base-content/60">
-            Клиент вводит имя, телефон и номер автомобиля.
-          </p>
-        </div>
-
-        <div class="rounded-xl bg-base-200 p-4">
-          <div class="text-sm font-semibold text-primary">Шаг 4</div>
-
-          <div class="mt-2 font-medium">Проверка статуса</div>
-
-          <p class="mt-1 text-sm text-base-content/60">
-            Клиент находит запись по телефону, а администратор управляет заявкой.
-          </p>
-        </div>
-      </div>
+      </article>
     </section>
   </div>
 </main>
