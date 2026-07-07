@@ -12,15 +12,19 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    selected_date = Date.utc_today()
+    start_date = Date.utc_today()
+    end_date = start_date
     selected_status = "all"
     search_query = ""
-    {bookings, summary} = load_admin_data(selected_date, selected_status, search_query)
+
+    {bookings, summary} =
+      load_admin_data(start_date, end_date, selected_status, search_query)
 
     socket =
       socket
       |> assign(:page_title, "Управление записями")
-      |> assign(:selected_date, Date.to_iso8601(selected_date))
+      |> assign(:start_date, Date.to_iso8601(start_date))
+      |> assign(:end_date, Date.to_iso8601(end_date))
       |> assign(:selected_status, selected_status)
       |> assign(:search_query, search_query)
       |> assign(:status_filters, @status_filters)
@@ -34,19 +38,24 @@ defmodule AutoslotWeb.AdminBookingLive do
   end
 
   @impl true
-  def handle_event("change_date", %{"date" => date_string}, socket) do
-    selected_date = parse_date(date_string)
+  def handle_event("change_period", params, socket) do
+    start_date_string = Map.get(params, "start_date", socket.assigns.start_date)
+    end_date_string = Map.get(params, "end_date", socket.assigns.end_date)
+
+    {start_date, end_date} = parse_date_range(start_date_string, end_date_string)
 
     {bookings, summary} =
       load_admin_data(
-        selected_date,
+        start_date,
+        end_date,
         socket.assigns.selected_status,
         socket.assigns.search_query
       )
 
     socket =
       socket
-      |> assign(:selected_date, Date.to_iso8601(selected_date))
+      |> assign(:start_date, Date.to_iso8601(start_date))
+      |> assign(:end_date, Date.to_iso8601(end_date))
       |> assign(:bookings, bookings)
       |> assign(:summary, summary)
       |> assign(:booking_to_cancel, nil)
@@ -58,12 +67,13 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   @impl true
   def handle_event("change_status_filter", %{"status" => selected_status}, socket) do
-    selected_date = parse_date(socket.assigns.selected_date)
+    {start_date, end_date} = current_date_range(socket)
     selected_status = normalize_status_filter(selected_status)
 
     {bookings, summary} =
       load_admin_data(
-        selected_date,
+        start_date,
+        end_date,
         selected_status,
         socket.assigns.search_query
       )
@@ -82,12 +92,13 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   @impl true
   def handle_event("search_bookings", %{"search_query" => search_query}, socket) do
-    selected_date = parse_date(socket.assigns.selected_date)
+    {start_date, end_date} = current_date_range(socket)
     search_query = String.trim(search_query)
 
     {bookings, summary} =
       load_admin_data(
-        selected_date,
+        start_date,
+        end_date,
         socket.assigns.selected_status,
         search_query
       )
@@ -106,12 +117,13 @@ defmodule AutoslotWeb.AdminBookingLive do
 
   @impl true
   def handle_event("clear_search", _params, socket) do
-    selected_date = parse_date(socket.assigns.selected_date)
+    {start_date, end_date} = current_date_range(socket)
     search_query = ""
 
     {bookings, summary} =
       load_admin_data(
-        selected_date,
+        start_date,
+        end_date,
         socket.assigns.selected_status,
         search_query
       )
@@ -164,11 +176,12 @@ defmodule AutoslotWeb.AdminBookingLive do
 
     case Bookings.update_booking(booking, %{status: status}) do
       {:ok, _booking} ->
-        selected_date = parse_date(socket.assigns.selected_date)
+        {start_date, end_date} = current_date_range(socket)
 
         {bookings, summary} =
           load_admin_data(
-            selected_date,
+            start_date,
+            end_date,
             socket.assigns.selected_status,
             socket.assigns.search_query
           )
@@ -193,8 +206,8 @@ defmodule AutoslotWeb.AdminBookingLive do
     end
   end
 
-  defp load_admin_data(%Date{} = date, selected_status, search_query) do
-    all_bookings = Bookings.list_bookings_with_services_for_date(date)
+  defp load_admin_data(%Date{} = start_date, %Date{} = end_date, selected_status, search_query) do
+    all_bookings = list_bookings_with_services_for_period(start_date, end_date)
     summary = build_summary(all_bookings)
 
     filtered_bookings =
@@ -203,6 +216,15 @@ defmodule AutoslotWeb.AdminBookingLive do
       |> filter_bookings_by_search(search_query)
 
     {filtered_bookings, summary}
+  end
+
+  defp list_bookings_with_services_for_period(%Date{} = start_date, %Date{} = end_date) do
+    start_date
+    |> Date.range(end_date)
+    |> Enum.flat_map(&Bookings.list_bookings_with_services_for_date/1)
+    |> Enum.sort_by(fn booking ->
+      DateTime.to_unix(booking.starts_at)
+    end)
   end
 
   defp filter_bookings_by_status(bookings, "all"), do: bookings
@@ -276,6 +298,21 @@ defmodule AutoslotWeb.AdminBookingLive do
     end
   end
 
+  defp parse_date_range(start_date_string, end_date_string) do
+    start_date = parse_date(start_date_string)
+    end_date = parse_date(end_date_string)
+
+    if Date.compare(start_date, end_date) == :gt do
+      {end_date, start_date}
+    else
+      {start_date, end_date}
+    end
+  end
+
+  defp current_date_range(socket) do
+    parse_date_range(socket.assigns.start_date, socket.assigns.end_date)
+  end
+
   defp format_datetime(%DateTime{} = datetime) do
     date = Date.to_iso8601(DateTime.to_date(datetime))
 
@@ -302,6 +339,12 @@ defmodule AutoslotWeb.AdminBookingLive do
       |> String.slice(0, 5)
 
     "#{start_time}–#{end_time}"
+  end
+
+  defp format_booking_period(booking) do
+    date = Date.to_iso8601(DateTime.to_date(booking.starts_at))
+
+    "#{date} #{format_time_range(booking)}"
   end
 
   defp service_name(%{service: %{name: name}}) when is_binary(name), do: name
@@ -344,23 +387,15 @@ defmodule AutoslotWeb.AdminBookingLive do
           </div>
 
           <div class="flex flex-wrap gap-3">
-            <a href="/book" class="btn btn-outline">
-              Страница клиента
-            </a>
-
-            <a href="/services" class="btn btn-outline">
-              Каталог услуг
-            </a>
-
-            <a href="/admin/logout" class="btn btn-error">
-              Выйти
-            </a>
+            <a href="/book" class="btn btn-outline">Страница клиента</a>
+            <a href="/services" class="btn btn-outline">Каталог услуг</a>
+            <a href="/admin/logout" class="btn btn-error">Выйти</a>
           </div>
         </div>
 
         <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-xl bg-base-100 p-5 shadow">
-            <div class="text-sm text-base-content/60">Всего записей</div>
+            <div class="text-sm text-base-content/60">Всего в периоде</div>
 
             <div class="mt-2 text-3xl font-bold">{@summary.total}</div>
           </div>
@@ -386,20 +421,38 @@ defmodule AutoslotWeb.AdminBookingLive do
 
         <section class="rounded-xl bg-base-100 p-6 shadow">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <form phx-change="change_date" class="flex flex-col gap-2">
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-end">
+              <form
+                id="admin-period-form"
+                phx-change="change_period"
+                class="grid gap-4 sm:grid-cols-2"
+              >
                 <label class="grid gap-2">
-                  <span class="font-medium">Дата</span>
+                  <span class="font-medium">Начало периода</span>
                   <input
                     type="date"
-                    name="date"
-                    value={@selected_date}
+                    name="start_date"
+                    value={@start_date}
+                    class="input input-bordered"
+                  />
+                </label>
+
+                <label class="grid gap-2">
+                  <span class="font-medium">Конец периода</span>
+                  <input
+                    type="date"
+                    name="end_date"
+                    value={@end_date}
                     class="input input-bordered"
                   />
                 </label>
               </form>
 
-              <form phx-change="change_status_filter" class="flex flex-col gap-2">
+              <form
+                id="admin-status-filter-form"
+                phx-change="change_status_filter"
+                class="flex flex-col gap-2"
+              >
                 <label class="grid gap-2">
                   <span class="font-medium">Статус</span>
                   <select name="status" class="select select-bordered">
@@ -413,6 +466,7 @@ defmodule AutoslotWeb.AdminBookingLive do
               </form>
 
               <form
+                id="admin-booking-search-form"
                 phx-change="search_bookings"
                 phx-submit="search_bookings"
                 class="flex flex-col gap-2"
@@ -442,7 +496,7 @@ defmodule AutoslotWeb.AdminBookingLive do
             </div>
 
             <div class="text-sm text-base-content/60">
-              Найдено записей: {length(@bookings)}
+              Период: {@start_date} — {@end_date}. Найдено записей: {length(@bookings)}
             </div>
           </div>
 
@@ -460,11 +514,12 @@ defmodule AutoslotWeb.AdminBookingLive do
 
           <%= if Enum.empty?(@bookings) do %>
             <div class="mt-8 rounded-lg border border-base-300 p-8 text-center">
-              <h2 class="text-xl font-semibold">На выбранную дату записей нет</h2>
+              <h2 class="text-xl font-semibold">В выбранном периоде записей нет</h2>
 
               <p class="mt-2 text-base-content/60">
-                Измените дату, фильтр статуса или поисковый запрос. Также можно создать тестовую запись на странице клиента.
+                Измените период, фильтр статуса или поисковый запрос. Также можно создать тестовую запись на странице клиента.
               </p>
+
               <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
             </div>
           <% else %>
@@ -472,7 +527,7 @@ defmodule AutoslotWeb.AdminBookingLive do
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Время</th>
+                    <th>Дата и время</th>
 
                     <th>Клиент</th>
 
@@ -494,7 +549,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                   <%= for booking <- @bookings do %>
                     <tr>
                       <td class="font-medium">
-                        {format_time_range(booking)}
+                        {format_booking_period(booking)}
                       </td>
 
                       <td>
@@ -587,7 +642,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                 </div>
 
                 <div>
-                  <span class="font-semibold">Время:</span> {format_time_range(@booking_to_cancel)}
+                  <span class="font-semibold">Время:</span> {format_booking_period(@booking_to_cancel)}
                 </div>
               </div>
             </div>
