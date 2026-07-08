@@ -56,8 +56,7 @@ defmodule AutoslotWeb.CustomerCameraLive do
             <a href="/" class="text-sm text-primary hover:underline">← На главную</a>
 
             <div class="mt-5 inline-flex items-center gap-3 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-medium text-primary shadow-sm backdrop-blur">
-              <span class="size-2 rounded-full bg-primary"></span>
-              Клиентский доступ
+              <span class="size-2 rounded-full bg-primary"></span> Клиентский доступ
             </div>
 
             <h1 class="mt-5 text-4xl font-semibold tracking-tight text-base-content md:text-5xl">
@@ -111,8 +110,7 @@ defmodule AutoslotWeb.CustomerCameraLive do
                 </div>
 
                 <div class="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-black/35 px-3 py-2 text-sm font-medium text-white backdrop-blur">
-                  <span class="size-2 rounded-full bg-error"></span>
-                  LIVE
+                  <span class="size-2 rounded-full bg-error"></span> LIVE
                 </div>
 
                 <div class="absolute right-5 top-5 rounded-full bg-success px-3 py-2 text-sm font-medium text-success-content">
