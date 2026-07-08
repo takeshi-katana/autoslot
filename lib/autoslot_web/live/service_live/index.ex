@@ -14,13 +14,13 @@ defmodule AutoslotWeb.ServiceLive.Index do
             <h1 class="mt-4 text-4xl font-semibold text-base-content">
               Каталог услуг
             </h1>
-
+            
             <p class="mt-3 max-w-3xl text-base-content/70">
               Управление услугами автосервиса: название, описание, длительность и ориентировочная цена.
               Эти услуги отображаются клиенту на странице онлайн-записи.
             </p>
           </div>
-
+          
           <div class="flex gap-3">
             <a href="/book" class="btn btn-outline">Страница клиента</a>
             <.button variant="primary" navigate={~p"/services/new"}>
@@ -28,15 +28,15 @@ defmodule AutoslotWeb.ServiceLive.Index do
             </.button>
           </div>
         </div>
-
+        
         <%= if @service_count == 0 do %>
           <section class="rounded-3xl border border-white/10 bg-base-100/80 p-10 text-center shadow-2xl backdrop-blur-xl">
             <h2 class="text-2xl font-semibold">Услуги пока не добавлены</h2>
-
+            
             <p class="mt-3 text-base-content/60">
               Создайте первую услугу вручную или запустите seed-данные.
             </p>
-
+            
             <.button variant="primary" navigate={~p"/services/new"} class="mt-6">
               <.icon name="hero-plus" /> Добавить услугу
             </.button>
@@ -53,32 +53,32 @@ defmodule AutoslotWeb.ServiceLive.Index do
                     <h2 class="text-2xl font-semibold text-base-content">
                       {service.name}
                     </h2>
-
+                    
                     <div class="mt-3 flex flex-wrap gap-2">
                       <span class="badge badge-primary">
                         {service.duration_minutes} мин.
                       </span>
-
+                      
                       <span class="badge badge-outline">
                         {service.price} ₽
                       </span>
                     </div>
                   </div>
                 </div>
-
+                
                 <p class="mt-5 flex-1 text-base leading-7 text-base-content/70">
                   {service.description}
                 </p>
-
+                
                 <div class="mt-6 flex flex-wrap gap-2 border-t border-base-300 pt-5">
                   <.link navigate={~p"/services/#{service}"} class="btn btn-outline btn-sm">
                     Открыть
                   </.link>
-
+                  
                   <.link navigate={~p"/services/#{service}/edit"} class="btn btn-primary btn-sm">
                     Редактировать
                   </.link>
-
+                  
                   <button
                     type="button"
                     phx-click={JS.push("delete", value: %{id: service.id})}

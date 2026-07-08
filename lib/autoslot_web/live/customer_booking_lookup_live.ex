@@ -28,22 +28,22 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
             <h1 class="mt-4 text-4xl font-semibold text-base-content">
               Мои записи
             </h1>
-
+            
             <p class="mt-3 max-w-3xl text-base-content/70">
               Введите номер телефона, который был указан при записи. Система покажет найденные
               заявки, их статус и позволит отменить активную запись без звонка администратору.
             </p>
           </div>
-
+          
           <a href="/book" class="btn btn-primary">
             Создать новую запись
           </a>
         </div>
-
+        
         <section class="grid gap-6 lg:grid-cols-[360px_1fr]">
           <aside class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
             <h2 class="text-xl font-semibold">Поиск по телефону</h2>
-
+            
             <.form for={@form} id="booking-lookup-form" phx-submit="search" class="mt-5 grid gap-4">
               <.input
                 field={@form[:phone]}
@@ -55,36 +55,36 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
                 Найти записи
               </button>
             </.form>
-
+            
             <div class="mt-6 rounded-2xl border border-white/10 bg-base-200/70 p-4 text-sm text-base-content/70">
               <div class="font-semibold text-base-content">Пример</div>
-
+              
               <p class="mt-1">
                 Можно вводить телефон с пробелами, скобками и дефисами. Для поиска используются
                 цифры номера.
               </p>
             </div>
           </aside>
-
+          
           <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
             <%= if @notice do %>
               <div class="alert alert-success mb-5">
                 {@notice}
               </div>
             <% end %>
-
+            
             <%= if @error do %>
               <div class="alert alert-error mb-5">
                 {@error}
               </div>
             <% end %>
-
+            
             <%= cond do %>
               <% not @searched? -> %>
                 <div class="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-base-200/40 p-8 text-center">
                   <div>
                     <h2 class="text-2xl font-semibold">Введите телефон</h2>
-
+                    
                     <p class="mt-3 max-w-xl text-base-content/60">
                       Здесь появятся записи клиента: услуга, дата, время, статус и действие
                       для отмены.
@@ -95,11 +95,11 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
                 <div class="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-base-200/40 p-8 text-center">
                   <div>
                     <h2 class="text-2xl font-semibold">Записи не найдены</h2>
-
+                    
                     <p class="mt-3 max-w-xl text-base-content/60">
                       Проверьте номер телефона или создайте новую запись на услугу.
                     </p>
-
+                    
                     <a href="/book" class="btn btn-primary mt-6">
                       Создать запись
                     </a>
@@ -109,17 +109,17 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
                 <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 class="text-2xl font-semibold">Найденные записи</h2>
-
+                    
                     <p class="mt-1 text-sm text-base-content/60">
                       Телефон: {@phone}
                     </p>
                   </div>
-
+                  
                   <div class="badge badge-outline badge-lg">
                     {length(@bookings)} шт.
                   </div>
                 </div>
-
+                
                 <div class="grid gap-4">
                   <%= for booking <- @bookings do %>
                     <article class="rounded-2xl border border-white/10 bg-base-200/50 p-5">
@@ -129,33 +129,33 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
                             <h3 class="text-xl font-semibold">
                               {service_name(booking)}
                             </h3>
-
+                            
                             <span class={status_class(booking.status)}>
                               {status_label(booking.status)}
                             </span>
                           </div>
-
+                          
                           <div class="mt-3 grid gap-2 text-sm text-base-content/70 sm:grid-cols-2">
                             <div>
                               <span class="font-semibold text-base-content">Дата и время:</span> {format_datetime(
                                 booking.starts_at
                               )}
                             </div>
-
+                            
                             <div>
                               <span class="font-semibold text-base-content">Автомобиль:</span> {booking.vehicle_plate}
                             </div>
-
+                            
                             <div>
                               <span class="font-semibold text-base-content">Клиент:</span> {booking.customer_name}
                             </div>
-
+                            
                             <div>
                               <span class="font-semibold text-base-content">Телефон:</span> {booking.phone}
                             </div>
                           </div>
                         </div>
-
+                        
                         <%= if CustomerLookup.active?(booking) do %>
                           <button
                             type="button"
@@ -177,22 +177,22 @@ defmodule AutoslotWeb.CustomerBookingLookupLive do
             <% end %>
           </section>
         </section>
-
+        
         <%= if @booking_to_cancel do %>
           <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
             <div class="w-full max-w-lg rounded-3xl border border-white/10 bg-base-100 p-6 shadow-2xl">
               <h2 class="text-2xl font-semibold">Отменить запись?</h2>
-
+              
               <p class="mt-3 text-base-content/70">
                 Запись на услугу "{service_name(@booking_to_cancel)}" будет переведена в статус
                 "Отменена". Это действие увидит администратор.
               </p>
-
+              
               <div class="mt-6 flex flex-wrap justify-end gap-3">
                 <button type="button" class="btn btn-outline" phx-click="dismiss_cancel">
                   Не отменять
                 </button>
-
+                
                 <button
                   type="button"
                   class="btn btn-error"
