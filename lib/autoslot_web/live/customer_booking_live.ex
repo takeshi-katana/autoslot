@@ -452,6 +452,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 <button type="submit" class="btn btn-primary mt-2" disabled={is_nil(@selected_slot)}>
                   Создать запись
                 </button>
+
                 <div class="mt-10 flex justify-center">
                   <div class="relative w-full max-w-[420px]">
                     <div class="absolute inset-0 rounded-[3rem] bg-primary/5 blur-3xl"></div>

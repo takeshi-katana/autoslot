@@ -519,7 +519,6 @@ defmodule AutoslotWeb.AdminBookingLive do
               <p class="mt-2 text-base-content/60">
                 Измените период, фильтр статуса или поисковый запрос. Также можно создать тестовую запись на странице клиента.
               </p>
-
               <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
             </div>
           <% else %>
