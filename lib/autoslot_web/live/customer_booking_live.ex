@@ -317,22 +317,22 @@ defmodule AutoslotWeb.CustomerBookingLive do
             <h1 class="mt-4 text-4xl font-semibold text-base-content">
               Онлайн-запись в автосервис
             </h1>
-            
+
             <p class="mt-3 max-w-2xl text-base-content/70">
               Выберите услугу, дату и свободное время. После отправки формы запись будет создана
               со статусом ожидания подтверждения.
             </p>
           </div>
-          
+
           <a href="/my-bookings" class="btn btn-outline">
             Мои записи
           </a>
         </div>
-        
+
         <%= if Enum.empty?(@services) do %>
           <div class="rounded-lg border border-warning bg-warning/10 p-6">
             <h2 class="text-xl font-semibold">Услуги пока не добавлены</h2>
-            
+
             <p class="mt-2">
               Сначала добавьте услуги в каталог или запустите seed-данные.
             </p>
@@ -343,17 +343,17 @@ defmodule AutoslotWeb.CustomerBookingLive do
               <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 class="text-2xl font-semibold">Данные записи</h2>
-                  
+
                   <p class="mt-2 text-sm text-base-content/60">
                     Заполните контактные данные и выберите подходящий слот.
                   </p>
                 </div>
-                
+
                 <a href="/my-bookings" class="btn btn-outline btn-sm">
                   Проверить запись
                 </a>
               </div>
-              
+
               <%= if @success_message do %>
                 <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
                   {@success_message}
@@ -364,13 +364,13 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   </div>
                 </div>
               <% end %>
-              
+
               <%= if @error_message do %>
                 <div class="mt-4 rounded-lg border border-error bg-error/10 p-4 text-error">
                   {@error_message}
                 </div>
               <% end %>
-              
+
               <form phx-change="change_selection" class="mt-6 grid gap-4">
                 <label class="grid gap-2">
                   <span class="font-medium">Услуга</span>
@@ -385,7 +385,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     <% end %>
                   </select>
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Дата</span>
                   <input
@@ -400,13 +400,13 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   </span>
                 </label>
               </form>
-              
+
               <form phx-submit="create_booking" class="mt-6 grid gap-4">
                 <input type="hidden" name="service_id" value={@selected_service_id} />
                 <input type="hidden" name="slot" value={@selected_slot} />
                 <div class="rounded-2xl border border-white/10 bg-base-200/70 p-4">
                   <div class="text-sm text-base-content/60">Выбранное время</div>
-                  
+
                   <div class="mt-1 text-lg font-semibold">
                     <%= if @selected_slot do %>
                       {format_slot(find_slot(@slots, @selected_slot))}
@@ -415,7 +415,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     <% end %>
                   </div>
                 </div>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Имя клиента</span>
                   <input
@@ -426,7 +426,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Телефон</span>
                   <input
@@ -437,7 +437,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Номер автомобиля</span>
                   <input
@@ -448,15 +448,15 @@ defmodule AutoslotWeb.CustomerBookingLive do
                     class="input input-bordered w-full"
                   />
                 </label>
-                
+
                 <button type="submit" class="btn btn-primary mt-2" disabled={is_nil(@selected_slot)}>
                   Создать запись
                 </button>
-                
+
                 <div class="mt-10 flex justify-center">
                   <div class="relative w-full max-w-[420px]">
                     <div class="absolute inset-0 rounded-[3rem] bg-primary/5 blur-3xl"></div>
-                    
+
                     <img
                       src={~p"/images/booking-illustration.svg"}
                       alt="Иллюстрация автосервиса"
@@ -468,27 +468,27 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 </div>
               </form>
             </section>
-            
+
             <aside class="grid gap-6">
               <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
                 <h2 class="text-xl font-semibold">Выбранная услуга</h2>
-                
+
                 <%= if @selected_service do %>
                   <div class="mt-4 rounded-2xl border border-white/10 bg-base-200/50 p-4">
                     <h3 class="text-2xl font-bold text-base-content">
                       {@selected_service.name}
                     </h3>
-                    
+
                     <div class="mt-3 flex flex-wrap gap-2">
                       <span class="badge badge-primary">
                         {@selected_service.duration_minutes} мин.
                       </span>
-                      
+
                       <span class="badge badge-outline">
                         {@selected_service.price} ₽
                       </span>
                     </div>
-                    
+
                     <p class="mt-4 text-sm leading-6 text-base-content/70">
                       {@selected_service.description}
                     </p>
@@ -499,32 +499,32 @@ defmodule AutoslotWeb.CustomerBookingLive do
                   </p>
                 <% end %>
               </section>
-              
+
               <section class="rounded-3xl border border-white/10 bg-base-100/80 p-6 shadow-2xl backdrop-blur-xl">
                 <div class="flex items-start justify-between gap-4">
                   <div>
                     <h2 class="text-xl font-semibold">Доступные слоты</h2>
-                    
+
                     <p class="mt-2 text-sm text-base-content/70">
                       Выберите свободный интервал. Занятые слоты показаны серым цветом.
                     </p>
                   </div>
                 </div>
-                
+
                 <div class="mt-4 flex flex-wrap gap-2 text-xs">
                   <span class="rounded-full bg-base-100/70 px-3 py-1 text-base-content">
                     Свободно
                   </span>
-                  
+
                   <span class="rounded-full bg-primary px-3 py-1 text-primary-content">
                     Выбрано
                   </span>
-                  
+
                   <span class="rounded-full bg-base-300 px-3 py-1 text-base-content/40">
                     Занято
                   </span>
                 </div>
-                
+
                 <div class="mt-5 grid grid-cols-2 gap-3">
                   <%= for slot <- @slot_options do %>
                     <button
@@ -535,19 +535,19 @@ defmodule AutoslotWeb.CustomerBookingLive do
                       class={slot_button_class(slot, @selected_slot)}
                     >
                       <div class="font-semibold">{format_slot(slot)}</div>
-                      
+
                       <div class={slot_status_class(slot)}>{slot_status_label(slot)}</div>
                     </button>
                   <% end %>
                 </div>
-                
+
                 <div class="mt-6 rounded-2xl border border-white/10 bg-base-200/70 p-4 text-sm text-base-content/70">
                   <div class="font-semibold text-base-content">Уже записывались?</div>
-                  
+
                   <p class="mt-1">
                     Найдите свои записи по номеру телефона и проверьте статус заявки.
                   </p>
-                  
+
                   <a href="/my-bookings" class="btn btn-outline btn-sm mt-4">
                     Мои записи
                   </a>

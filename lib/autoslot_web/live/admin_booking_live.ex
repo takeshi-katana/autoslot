@@ -380,45 +380,45 @@ defmodule AutoslotWeb.AdminBookingLive do
             <h1 class="mt-4 text-4xl font-bold text-base-content">
               Управление записями
             </h1>
-            
+
             <p class="mt-3 max-w-2xl text-base-content/70">
               Административная страница для просмотра записей клиентов и изменения их статусов.
             </p>
           </div>
-          
+
           <div class="flex flex-wrap gap-3">
             <a href="/book" class="btn btn-outline">Страница клиента</a>
             <a href="/services" class="btn btn-outline">Каталог услуг</a>
             <a href="/admin/logout" class="btn btn-error">Выйти</a>
           </div>
         </div>
-        
+
         <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-xl bg-base-100 p-5 shadow">
             <div class="text-sm text-base-content/60">Всего в периоде</div>
-            
+
             <div class="mt-2 text-3xl font-bold">{@summary.total}</div>
           </div>
-          
+
           <div class="rounded-xl bg-base-100 p-5 shadow">
             <div class="text-sm text-base-content/60">Ожидают</div>
-            
+
             <div class="mt-2 text-3xl font-bold text-warning">{@summary.pending}</div>
           </div>
-          
+
           <div class="rounded-xl bg-base-100 p-5 shadow">
             <div class="text-sm text-base-content/60">Подтверждены</div>
-            
+
             <div class="mt-2 text-3xl font-bold text-success">{@summary.confirmed}</div>
           </div>
-          
+
           <div class="rounded-xl bg-base-100 p-5 shadow">
             <div class="text-sm text-base-content/60">Отменены</div>
-            
+
             <div class="mt-2 text-3xl font-bold text-error">{@summary.cancelled}</div>
           </div>
         </section>
-        
+
         <section class="rounded-xl bg-base-100 p-6 shadow">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-end">
@@ -436,7 +436,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                     class="input input-bordered"
                   />
                 </label>
-                
+
                 <label class="grid gap-2">
                   <span class="font-medium">Конец периода</span>
                   <input
@@ -447,7 +447,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                   />
                 </label>
               </form>
-              
+
               <form
                 id="admin-status-filter-form"
                 phx-change="change_status_filter"
@@ -464,7 +464,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                   </select>
                 </label>
               </form>
-              
+
               <form
                 id="admin-booking-search-form"
                 phx-change="search_bookings"
@@ -494,32 +494,32 @@ defmodule AutoslotWeb.AdminBookingLive do
                 </label>
               </form>
             </div>
-            
+
             <div class="text-sm text-base-content/60">
               Период: {@start_date} — {@end_date}. Найдено записей: {length(@bookings)}
             </div>
           </div>
-          
+
           <%= if @success_message do %>
             <div class="mt-4 rounded-lg border border-success bg-success/10 p-4 text-success">
               {@success_message}
             </div>
           <% end %>
-          
+
           <%= if @error_message do %>
             <div class="mt-4 rounded-lg border border-error bg-error/10 p-4 text-error">
               {@error_message}
             </div>
           <% end %>
-          
+
           <%= if Enum.empty?(@bookings) do %>
             <div class="mt-8 rounded-lg border border-base-300 p-8 text-center">
               <h2 class="text-xl font-semibold">В выбранном периоде записей нет</h2>
-              
+
               <p class="mt-2 text-base-content/60">
                 Измените период, фильтр статуса или поисковый запрос. Также можно создать тестовую запись на странице клиента.
               </p>
-               <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
+              <a href="/book" class="btn btn-primary mt-4">Создать запись</a>
             </div>
           <% else %>
             <div class="mt-6 overflow-x-auto">
@@ -527,52 +527,52 @@ defmodule AutoslotWeb.AdminBookingLive do
                 <thead>
                   <tr>
                     <th>Дата и время</th>
-                    
+
                     <th>Клиент</th>
-                    
+
                     <th>Телефон</th>
-                    
+
                     <th>Автомобиль</th>
-                    
+
                     <th>Услуга</th>
-                    
+
                     <th>Статус</th>
-                    
+
                     <th>Действия</th>
-                    
+
                     <th>Создана</th>
                   </tr>
                 </thead>
-                
+
                 <tbody>
                   <%= for booking <- @bookings do %>
                     <tr>
                       <td class="font-medium">
                         {format_booking_period(booking)}
                       </td>
-                      
+
                       <td>
                         {booking.customer_name}
                       </td>
-                      
+
                       <td>
                         {booking.phone}
                       </td>
-                      
+
                       <td>
                         {booking.vehicle_plate}
                       </td>
-                      
+
                       <td>
                         {service_name(booking)}
                       </td>
-                      
+
                       <td>
                         <span class={status_badge_class(booking.status)}>
                           {status_label(booking.status)}
                         </span>
                       </td>
-                      
+
                       <td>
                         <div class="flex gap-2">
                           <%= if booking.status == "pending" do %>
@@ -584,7 +584,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                               Подтвердить
                             </button>
                           <% end %>
-                          
+
                           <%= if booking.status != "cancelled" do %>
                             <button
                               phx-click="request_cancel_booking"
@@ -598,7 +598,7 @@ defmodule AutoslotWeb.AdminBookingLive do
                           <% end %>
                         </div>
                       </td>
-                      
+
                       <td class="text-sm text-base-content/60">
                         {format_datetime(booking.inserted_at)}
                       </td>
@@ -610,47 +610,47 @@ defmodule AutoslotWeb.AdminBookingLive do
           <% end %>
         </section>
       </div>
-      
+
       <%= if @booking_to_cancel do %>
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div class="w-full max-w-lg rounded-xl bg-base-100 p-6 shadow-xl">
             <h2 class="text-2xl font-bold text-base-content">
               Отменить запись?
             </h2>
-            
+
             <p class="mt-3 text-base-content/70">
               Вы действительно хотите отменить запись клиента?
             </p>
-            
+
             <div class="mt-5 rounded-lg border border-base-300 bg-base-200 p-4">
               <div class="grid gap-2 text-sm">
                 <div>
                   <span class="font-semibold">Клиент:</span> {@booking_to_cancel.customer_name}
                 </div>
-                
+
                 <div>
                   <span class="font-semibold">Телефон:</span> {@booking_to_cancel.phone}
                 </div>
-                
+
                 <div>
                   <span class="font-semibold">Автомобиль:</span> {@booking_to_cancel.vehicle_plate}
                 </div>
-                
+
                 <div>
                   <span class="font-semibold">Услуга:</span> {service_name(@booking_to_cancel)}
                 </div>
-                
+
                 <div>
                   <span class="font-semibold">Время:</span> {format_booking_period(@booking_to_cancel)}
                 </div>
               </div>
             </div>
-            
+
             <div class="mt-6 flex justify-end gap-3">
               <button phx-click="dismiss_cancel_booking" class="btn btn-outline">
                 Нет, оставить
               </button>
-              
+
               <button
                 phx-click="cancel_booking"
                 phx-value-id={@booking_to_cancel.id}
