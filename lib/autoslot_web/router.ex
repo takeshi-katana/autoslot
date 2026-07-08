@@ -25,6 +25,7 @@ defmodule AutoslotWeb.Router do
 
     live "/book", CustomerBookingLive
     live "/my-bookings", CustomerBookingLookupLive
+    live "/cameras", CustomerCameraLive
 
     get "/admin/login", AdminSessionController, :new
     post "/admin/login", AdminSessionController, :create
