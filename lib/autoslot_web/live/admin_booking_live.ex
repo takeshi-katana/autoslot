@@ -172,37 +172,39 @@ defmodule AutoslotWeb.AdminBookingLive do
   end
 
   defp update_booking_status(socket, booking_id, status, success_message) do
-    booking = Bookings.get_booking!(booking_id)
+    with {id, ""} <- Integer.parse(booking_id), %{} = booking <- Bookings.get_booking(id) do
+      case Bookings.update_booking_status(booking, status) do
+        {:ok, _booking} ->
+          {start_date, end_date} = current_date_range(socket)
 
-    case Bookings.update_booking(booking, %{status: status}) do
-      {:ok, _booking} ->
-        {start_date, end_date} = current_date_range(socket)
+          {bookings, summary} =
+            load_admin_data(
+              start_date,
+              end_date,
+              socket.assigns.selected_status,
+              socket.assigns.search_query
+            )
 
-        {bookings, summary} =
-          load_admin_data(
-            start_date,
-            end_date,
-            socket.assigns.selected_status,
-            socket.assigns.search_query
-          )
+          socket =
+            socket
+            |> assign(:bookings, bookings)
+            |> assign(:summary, summary)
+            |> assign(:booking_to_cancel, nil)
+            |> assign(:success_message, success_message)
+            |> assign(:error_message, nil)
 
-        socket =
-          socket
-          |> assign(:bookings, bookings)
-          |> assign(:summary, summary)
-          |> assign(:booking_to_cancel, nil)
-          |> assign(:success_message, success_message)
-          |> assign(:error_message, nil)
+          {:noreply, socket}
 
-        {:noreply, socket}
+        {:error, changeset} ->
+          socket =
+            socket
+            |> assign(:success_message, nil)
+            |> assign(:error_message, format_changeset_errors(changeset))
 
-      {:error, changeset} ->
-        socket =
-          socket
-          |> assign(:success_message, nil)
-          |> assign(:error_message, format_changeset_errors(changeset))
-
-        {:noreply, socket}
+          {:noreply, socket}
+      end
+    else
+      _ -> {:noreply, assign(socket, :error_message, "Запись не найдена.")}
     end
   end
 
@@ -219,12 +221,7 @@ defmodule AutoslotWeb.AdminBookingLive do
   end
 
   defp list_bookings_with_services_for_period(%Date{} = start_date, %Date{} = end_date) do
-    start_date
-    |> Date.range(end_date)
-    |> Enum.flat_map(&Bookings.list_bookings_with_services_for_date/1)
-    |> Enum.sort_by(fn booking ->
-      DateTime.to_unix(booking.starts_at)
-    end)
+    Bookings.list_bookings_with_services_for_period(start_date, end_date)
   end
 
   defp filter_bookings_by_status(bookings, "all"), do: bookings
@@ -243,7 +240,7 @@ defmodule AutoslotWeb.AdminBookingLive do
     Enum.filter(bookings, fn booking ->
       [
         booking.customer_name,
-        booking.phone,
+        String.replace(booking.phone || "", ~r/\D/, ""),
         booking.vehicle_plate,
         service_name(booking)
       ]
@@ -389,7 +386,14 @@ defmodule AutoslotWeb.AdminBookingLive do
           <div class="flex flex-wrap gap-3">
             <a href="/book" class="btn btn-outline">Страница клиента</a>
             <a href="/services" class="btn btn-outline">Каталог услуг</a>
-            <a href="/admin/logout" class="btn btn-error">Выйти</a>
+            <.form
+              for={to_form(%{}, as: :logout)}
+              id="admin-logout-form"
+              action={~p"/admin/logout"}
+              method="delete"
+            >
+              <button type="submit" class="btn btn-error">Выйти</button>
+            </.form>
           </div>
         </div>
 

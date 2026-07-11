@@ -13,6 +13,7 @@ defmodule Autoslot.Bookings.Booking do
     field :starts_at, :utc_datetime
     field :ends_at, :utc_datetime
     field :status, :string, default: "pending"
+    field :public_token, Ecto.UUID
 
     belongs_to :service, Service
 
@@ -29,7 +30,8 @@ defmodule Autoslot.Bookings.Booking do
       :starts_at,
       :ends_at,
       :status,
-      :service_id
+      :service_id,
+      :public_token
     ])
     |> validate_required([
       :customer_name,
@@ -46,6 +48,16 @@ defmodule Autoslot.Bookings.Booking do
     |> validate_inclusion(:status, @valid_statuses)
     |> validate_time_range()
     |> foreign_key_constraint(:service_id)
+    |> unique_constraint(:public_token)
+    |> exclusion_constraint(:starts_at, name: :bookings_no_overlapping_active_times)
+    |> put_public_token()
+  end
+
+  defp put_public_token(changeset) do
+    case {changeset.data.public_token, get_change(changeset, :public_token)} do
+      {nil, nil} -> put_change(changeset, :public_token, Ecto.UUID.generate())
+      _ -> changeset
+    end
   end
 
   defp validate_time_range(changeset) do

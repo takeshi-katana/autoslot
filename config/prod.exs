@@ -12,11 +12,7 @@ config :autoslot, AutoslotWeb.Endpoint, cache_static_manifest: "priv/static/cach
 # Note `:force_ssl` is required to be set at compile-time.
 config :autoslot, AutoslotWeb.Endpoint,
   force_ssl: [
-    rewrite_on: [:x_forwarded_proto],
-    exclude: [
-      # paths: ["/health"],
-      hosts: ["localhost", "127.0.0.1"]
-    ]
+    rewrite_on: [:x_forwarded_proto]
   ]
 
 # Configure Swoosh API Client

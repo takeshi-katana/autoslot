@@ -24,8 +24,12 @@ defmodule AutoslotWeb.ServiceLiveTest do
     %{service: service}
   end
 
+  defp log_in_admin(%{conn: conn}) do
+    %{conn: init_test_session(conn, admin_authenticated: true)}
+  end
+
   describe "Index" do
-    setup [:create_service]
+    setup [:create_service, :log_in_admin]
 
     test "lists all services", %{conn: conn, service: service} do
       {:ok, _index_live, html} = live(conn, ~p"/services")
@@ -97,7 +101,7 @@ defmodule AutoslotWeb.ServiceLiveTest do
   end
 
   describe "Show" do
-    setup [:create_service]
+    setup [:create_service, :log_in_admin]
 
     test "displays service", %{conn: conn, service: service} do
       {:ok, _show_live, html} = live(conn, ~p"/services/#{service}")

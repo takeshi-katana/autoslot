@@ -22,6 +22,7 @@ defmodule AutoslotWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/health", HealthController, :show
 
     live "/book", CustomerBookingLive
     live "/my-bookings", CustomerBookingLookupLive
@@ -30,18 +31,18 @@ defmodule AutoslotWeb.Router do
     get "/admin/login", AdminSessionController, :new
     post "/admin/login", AdminSessionController, :create
     delete "/admin/logout", AdminSessionController, :delete
-    get "/admin/logout", AdminSessionController, :delete
-
-    live "/services", ServiceLive.Index, :index
-    live "/services/new", ServiceLive.Form, :new
-    live "/services/:id/edit", ServiceLive.Form, :edit
-    live "/services/:id", ServiceLive.Show, :show
   end
 
   scope "/", AutoslotWeb do
     pipe_through [:browser, :require_admin]
 
-    live "/admin/bookings", AdminBookingLive
+    live_session :admin, on_mount: [{AutoslotWeb.AdminAuth, :require_admin}] do
+      live "/admin/bookings", AdminBookingLive
+      live "/services", ServiceLive.Index, :index
+      live "/services/new", ServiceLive.Form, :new
+      live "/services/:id/edit", ServiceLive.Form, :edit
+      live "/services/:id", ServiceLive.Show, :show
+    end
   end
 
   if Application.compile_env(:autoslot, :dev_routes) do

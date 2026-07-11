@@ -40,10 +40,6 @@ defmodule AutoslotWeb.CustomerBookingLive do
     "must be equal to %{number}" => "должно быть равно %{number}"
   }
 
-  @workday_start ~T[09:00:00]
-  @workday_end ~T[18:00:00]
-  @slot_step_minutes 30
-
   @impl true
   def mount(_params, _session, socket) do
     services = Services.list_services()
@@ -166,41 +162,10 @@ defmodule AutoslotWeb.CustomerBookingLive do
 
   defp load_slot_state(%Date{} = date, service) do
     bookings = Bookings.list_active_bookings_for_date(date)
-    available_slots = Scheduling.available_slots(date, service, bookings)
-    available_starts = MapSet.new(available_slots, &slot_value/1)
-
-    slot_options =
-      date
-      |> build_day_slots(service)
-      |> Enum.map(fn slot ->
-        Map.put(slot, :available, MapSet.member?(available_starts, slot_value(slot)))
-      end)
+    slot_options = Scheduling.slot_options(date, service, bookings)
+    available_slots = Enum.filter(slot_options, & &1.available)
 
     %{available_slots: available_slots, slot_options: slot_options}
-  end
-
-  defp build_day_slots(%Date{} = date, service) do
-    starts_at = DateTime.new!(date, @workday_start, "Etc/UTC")
-    workday_ends_at = DateTime.new!(date, @workday_end, "Etc/UTC")
-    duration_seconds = service.duration_minutes * 60
-    step_seconds = @slot_step_minutes * 60
-
-    do_build_day_slots(starts_at, workday_ends_at, duration_seconds, step_seconds, [])
-  end
-
-  defp do_build_day_slots(starts_at, workday_ends_at, duration_seconds, step_seconds, acc) do
-    ends_at = DateTime.add(starts_at, duration_seconds, :second)
-
-    if DateTime.compare(ends_at, workday_ends_at) in [:lt, :eq] do
-      slot = %{starts_at: starts_at, ends_at: ends_at}
-      next_starts_at = DateTime.add(starts_at, step_seconds, :second)
-
-      do_build_day_slots(next_starts_at, workday_ends_at, duration_seconds, step_seconds, [
-        slot | acc
-      ])
-    else
-      Enum.reverse(acc)
-    end
   end
 
   defp selected_service_id(nil), do: nil
@@ -371,7 +336,7 @@ defmodule AutoslotWeb.CustomerBookingLive do
                 </div>
               <% end %>
 
-              <form phx-change="change_selection" class="mt-6 grid gap-4">
+              <form id="booking-selection-form" phx-change="change_selection" class="mt-6 grid gap-4">
                 <label class="grid gap-2">
                   <span class="font-medium">Услуга</span>
                   <select name="service_id" class="select select-bordered w-full">

@@ -50,14 +50,12 @@ defmodule AutoslotWeb.AdminSessionController do
 
   defp admin_username do
     Application.get_env(:autoslot, :admin_username) ||
-      System.get_env("AUTOSLOT_ADMIN_USERNAME") ||
-      "admin"
+      System.get_env("AUTOSLOT_ADMIN_USERNAME") || ""
   end
 
   defp admin_password do
     Application.get_env(:autoslot, :admin_password) ||
-      System.get_env("AUTOSLOT_ADMIN_PASSWORD") ||
-      "autoslot"
+      System.get_env("AUTOSLOT_ADMIN_PASSWORD") || ""
   end
 
   defp secure_equals?(left, right) when is_binary(left) and is_binary(right) do

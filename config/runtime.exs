@@ -24,6 +24,16 @@ config :autoslot, AutoslotWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :prod do
+  admin_username =
+    System.get_env("AUTOSLOT_ADMIN_USERNAME") ||
+      raise "environment variable AUTOSLOT_ADMIN_USERNAME is missing"
+
+  admin_password =
+    System.get_env("AUTOSLOT_ADMIN_PASSWORD") ||
+      raise "environment variable AUTOSLOT_ADMIN_PASSWORD is missing"
+
+  config :autoslot, admin_username: admin_username, admin_password: admin_password
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
