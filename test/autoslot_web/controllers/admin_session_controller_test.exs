@@ -44,7 +44,7 @@ defmodule AutoslotWeb.AdminSessionControllerTest do
     assert html_response(conn, 200)
   end
 
-  test "GET /admin/logout signs admin out", %{conn: conn} do
+  test "DELETE /admin/logout signs admin out", %{conn: conn} do
     conn =
       post(conn, ~p"/admin/login", %{
         "admin" => %{"username" => "admin", "password" => "autoslot"}
@@ -55,7 +55,7 @@ defmodule AutoslotWeb.AdminSessionControllerTest do
     conn =
       conn
       |> recycle()
-      |> get(~p"/admin/logout")
+      |> delete(~p"/admin/logout")
 
     assert redirected_to(conn) == ~p"/admin/login"
     refute get_session(conn, :admin_authenticated)

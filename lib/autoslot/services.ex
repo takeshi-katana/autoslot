@@ -86,7 +86,10 @@ defmodule Autoslot.Services do
 
   """
   def delete_service(%Service{} = service) do
-    Repo.delete(service)
+    service
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.no_assoc_constraint(:bookings)
+    |> Repo.delete()
   end
 
   @doc """

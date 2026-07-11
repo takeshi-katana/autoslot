@@ -1,5 +1,7 @@
 import Config
 
+config :autoslot, admin_username: "admin", admin_password: "autoslot"
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used

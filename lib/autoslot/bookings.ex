@@ -34,8 +34,7 @@ defmodule Autoslot.Bookings do
     {day_start, next_day_start} = date_range(date)
 
     Booking
-    |> where([booking], booking.starts_at >= ^day_start)
-    |> where([booking], booking.starts_at < ^next_day_start)
+    |> where([booking], booking.starts_at < ^next_day_start and booking.ends_at > ^day_start)
     |> order_by([booking], asc: booking.starts_at)
     |> Repo.all()
   end
@@ -52,6 +51,17 @@ defmodule Autoslot.Bookings do
     |> Repo.preload(:service)
   end
 
+  def list_bookings_with_services_for_period(%Date{} = start_date, %Date{} = end_date) do
+    {start_at, _} = date_range(start_date)
+    {_, end_at} = date_range(Date.add(end_date, 1))
+
+    Booking
+    |> where([booking], booking.starts_at < ^end_at and booking.ends_at > ^start_at)
+    |> order_by([booking], asc: booking.starts_at)
+    |> preload(:service)
+    |> Repo.all()
+  end
+
   @doc """
   Returns active bookings for a specific date.
 
@@ -61,8 +71,7 @@ defmodule Autoslot.Bookings do
     {day_start, next_day_start} = date_range(date)
 
     Booking
-    |> where([booking], booking.starts_at >= ^day_start)
-    |> where([booking], booking.starts_at < ^next_day_start)
+    |> where([booking], booking.starts_at < ^next_day_start and booking.ends_at > ^day_start)
     |> where([booking], booking.status != "cancelled")
     |> order_by([booking], asc: booking.starts_at)
     |> Repo.all()
@@ -74,6 +83,8 @@ defmodule Autoslot.Bookings do
   Raises `Ecto.NoResultsError` if the Booking does not exist.
   """
   def get_booking!(id), do: Repo.get!(Booking, id)
+
+  def get_booking(id), do: Repo.get(Booking, id)
 
   @doc """
   Creates a booking.
@@ -107,12 +118,32 @@ defmodule Autoslot.Bookings do
     Repo.delete(booking)
   end
 
+  def update_booking_status(%Booking{} = booking, status)
+      when status in ["confirmed", "cancelled"] do
+    if valid_status_transition?(booking.status, status) do
+      update_booking(booking, %{status: status})
+    else
+      {:error,
+       Ecto.Changeset.add_error(change_booking(booking), :status, "invalid status transition")}
+    end
+  end
+
+  def update_booking_status(%Booking{} = booking, _status),
+    do: {:error, Ecto.Changeset.add_error(change_booking(booking), :status, "invalid status")}
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking booking changes.
   """
   def change_booking(%Booking{} = booking, attrs \\ %{}) do
     Booking.changeset(booking, attrs)
   end
+
+  defp valid_status_transition?("pending", "confirmed"), do: true
+
+  defp valid_status_transition?(status, "cancelled") when status in ["pending", "confirmed"],
+    do: true
+
+  defp valid_status_transition?(_, _), do: false
 
   defp validate_no_time_overlap(changeset, ignored_booking_id \\ nil) do
     if changeset.valid? do

@@ -38,6 +38,15 @@ defmodule Autoslot.Scheduling do
     |> reject_occupied_slots(bookings)
   end
 
+  def slot_options(date, service, bookings \\ []) do
+    all_slots = generate_slots(date, service.duration_minutes)
+    available_starts = MapSet.new(available_slots(date, service, bookings), & &1.starts_at)
+
+    Enum.map(all_slots, fn slot ->
+      Map.put(slot, :available, MapSet.member?(available_starts, slot.starts_at))
+    end)
+  end
+
   @doc """
   Checks whether two time intervals overlap.
 
